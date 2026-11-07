@@ -1,0 +1,70 @@
+.cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 400;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.cursor[data-shown='true'] {
+  opacity: 1;
+}
+
+.cursor__blob {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(255, 245, 230, 0.45);
+  border-radius: 50%;
+  translate: -50% -50%;
+  transition:
+    width 0.45s var(--spring),
+    height 0.45s var(--spring),
+    background-color 0.3s,
+    border-color 0.3s,
+    scale 0.2s;
+}
+
+.cursor[data-mode='link'] .cursor__blob {
+  width: 58px;
+  height: 58px;
+  border-color: rgba(255, 140, 80, 0.7);
+  background: rgba(255, 106, 43, 0.1);
+}
+
+.cursor[data-mode='label'] .cursor__blob {
+  width: 86px;
+  height: 86px;
+  border-color: transparent;
+  background: var(--ember);
+}
+
+.cursor[data-down='true'] .cursor__blob {
+  scale: 0.85;
+}
+
+.cursor__label {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity 0.2s,
+    transform 0.35s var(--spring);
+}
+
+.cursor[data-mode='label'] .cursor__label {
+  opacity: 1;
+  transform: none;
+}

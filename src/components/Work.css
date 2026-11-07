@@ -1,0 +1,334 @@
+.section {
+  position: relative;
+  padding-block: clamp(96px, 15vh, 170px);
+}
+
+.folders {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(16px, 2vw, 28px);
+}
+
+/* ---- Folder card ---------------------------------------------------------- */
+.folder {
+  --r: 22px;
+  --tab: 26px;
+  --f-back: #7a2a0c;
+  --f-front: linear-gradient(165deg, #ff7a3d 0%, #e2531c 50%, #a83a10 100%);
+  --f-ink: #fff6ee;
+  --f-muted: rgba(255, 238, 225, 0.8);
+  --f-edge: rgba(255, 255, 255, 0.3);
+
+  position: relative;
+  aspect-ratio: 3 / 4.15;
+  perspective: 1100px;
+  color: var(--f-ink);
+}
+
+.folder--paper {
+  --f-back: #b8afa3;
+  --f-front: linear-gradient(180deg, #f6f1ea 0%, #e7dfd4 100%);
+  --f-ink: #17120d;
+  --f-muted: #5c544b;
+  --f-edge: rgba(255, 255, 255, 1);
+}
+
+.folder--ink {
+  --f-back: #1b1918;
+  --f-front: linear-gradient(170deg, #1d1b1a 0%, #0b0a0a 100%);
+  --f-edge: rgba(255, 245, 230, 0.16);
+}
+
+.folder--smoke {
+  --f-back: #34302d;
+  --f-front: linear-gradient(165deg, #4a4541 0%, #2a2725 55%, #171514 100%);
+  --f-edge: rgba(255, 245, 230, 0.22);
+}
+
+/* The back of the folder, with a trapezoid tab. */
+.folder__back {
+  position: absolute;
+  inset: var(--tab) 0 0 0;
+  border-radius: 0 var(--r) var(--r) var(--r);
+  background: var(--f-back);
+  box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.8);
+}
+
+.folder__back::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% - 1px);
+  left: 0;
+  width: 46%;
+  height: calc(var(--tab) + 2px);
+  border-radius: 14px 14px 0 0;
+  background: var(--f-back);
+  transform: perspective(60px) rotateX(18deg);
+  transform-origin: 0 100%;
+}
+
+/* A sheet of paper inside; it slides out when the folder opens. */
+.folder__paper {
+  position: absolute;
+  top: calc(var(--tab) + 12px);
+  right: 14px;
+  left: 14px;
+  height: 46%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background:
+    repeating-linear-gradient(180deg, transparent 0 22px, rgba(120, 80, 40, 0.08) 22px 23px),
+    #fbf8f3;
+  color: #1d150e;
+  box-shadow: 0 -2px 18px rgba(0, 0, 0, 0.18);
+  transform: translateY(16px);
+  transition: transform 0.7s var(--ease-out);
+}
+
+.folder__paper::before {
+  content: '';
+  position: absolute;
+  inset: 6px -4px auto;
+  z-index: -1;
+  height: 100%;
+  border-radius: 12px;
+  background: #e6ddd0;
+  transform: rotate(-3deg);
+}
+
+.folder__paper-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #b23f0c;
+}
+
+.folder__paper ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.folder__paper li {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #f0e8dd;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.folder__paper-year {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: #6b5e50;
+}
+
+/* The front flap: art, number and words. It tips forward on hover. */
+.folder__front {
+  position: absolute;
+  inset: calc(var(--tab) + 26px) 0 0 0;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  border-radius: var(--r);
+  background: var(--f-front);
+  box-shadow:
+    inset 0 1px 0 var(--f-edge),
+    0 -10px 30px -12px rgba(0, 0, 0, 0.5),
+    0 24px 50px -24px rgba(0, 0, 0, 0.9);
+  transform-origin: 50% 100%;
+  transition:
+    transform 0.8s var(--ease-out),
+    box-shadow 0.8s var(--ease-out);
+}
+
+/* Pointer light */
+.folder__front::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(360px circle at var(--mx, 50%) calc(var(--my, 50%) - 52px), rgba(255, 255, 255, 0.16), transparent 45%);
+  opacity: 0;
+  transition: opacity 0.4s;
+  pointer-events: none;
+}
+
+.folder__art {
+  position: relative;
+  flex: 0 0 60%;
+  overflow: hidden;
+  border-radius: calc(var(--r) - 9px);
+  background: #0b0a0a;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.folder__art > * {
+  transition: transform 1s var(--ease-out);
+}
+
+.folder__num {
+  position: absolute;
+  top: 18px;
+  left: 22px;
+  font-size: clamp(34px, 3.2vw, 48px);
+  font-weight: 500;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  color: #fff;
+  text-shadow: 0 2px 20px rgba(0, 10, 40, 0.5);
+}
+
+.folder__arrow {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #fff;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+  transition:
+    transform 0.5s var(--spring),
+    background-color 0.3s,
+    color 0.3s;
+}
+
+.folder__arrow svg {
+  width: 16px;
+  height: 16px;
+}
+
+.folder__text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 14px 12px 8px;
+}
+
+.folder__text h3 {
+  font-size: clamp(19px, 1.6vw, 23px);
+  font-weight: 500;
+  letter-spacing: -0.025em;
+}
+
+.folder__text p {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  color: var(--f-muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* The title's button stretches over the whole front flap. */
+.folder__hit {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.folder__hit::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: var(--r);
+}
+
+.folder__hit:focus-visible {
+  outline: none;
+}
+
+/* The ring goes round the whole flap (the button's stretched hit area). */
+.folder__hit:focus-visible::after {
+  outline: 2px solid var(--ember-2);
+  outline-offset: 4px;
+}
+
+/* ---- Open on hover / keyboard focus ---- */
+@media (hover: hover) {
+  .folder:hover .folder__front,
+  .folder:has(.folder__hit:focus-visible) .folder__front {
+    transform: rotateX(-22deg);
+    box-shadow:
+      inset 0 1px 0 var(--f-edge),
+      0 -16px 40px -12px rgba(0, 0, 0, 0.6),
+      0 40px 60px -24px rgba(0, 0, 0, 0.9);
+  }
+
+  .folder:hover .folder__paper,
+  .folder:has(.folder__hit:focus-visible) .folder__paper {
+    transform: translateY(-34px) rotate(-1.5deg);
+  }
+
+  .folder:hover .folder__front::after {
+    opacity: 1;
+  }
+
+  .folder:hover .folder__art > * {
+    transform: scale(1.04);
+  }
+
+  .folder:hover .folder__arrow {
+    transform: rotate(45deg) scale(1.08);
+    background: #fff;
+    color: #17120d;
+  }
+}
+
+/* Touch: the paper always peeks out a little. */
+@media (hover: none) {
+  .folder__paper {
+    transform: translateY(-14px);
+  }
+}
+
+.folder:active .folder__front {
+  transform: rotateX(-14deg) scale(0.985);
+  transition-duration: 0.15s;
+}
+
+@media (max-width: 1100px) {
+  .folders {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .folder {
+    aspect-ratio: 4 / 4.3;
+  }
+}
+
+@media (max-width: 600px) {
+  .folders {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .folder {
+    aspect-ratio: 3 / 3.35;
+  }
+}

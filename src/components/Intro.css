@@ -1,0 +1,138 @@
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  cursor: pointer;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: opacity 0.7s ease;
+}
+
+.intro--out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.intro__corner {
+  position: absolute;
+  top: clamp(18px, 3vw, 32px);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  animation: intro-fade 0.8s 0.1s backwards;
+}
+
+.intro__corner--tl {
+  left: var(--gutter);
+}
+
+.intro__corner--tr {
+  right: var(--gutter);
+}
+
+.intro__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ember);
+  box-shadow: 0 0 14px var(--ember);
+  animation: intro-blink 1.1s ease-in-out infinite;
+}
+
+.intro__readout {
+  position: absolute;
+  bottom: clamp(28px, 5vw, 56px);
+  left: var(--gutter);
+  display: grid;
+  gap: 6px;
+}
+
+.intro__step {
+  color: var(--muted);
+  animation: intro-step 0.5s var(--ease-out);
+}
+
+.intro__ellipsis::after {
+  content: '...';
+  display: inline-block;
+  width: 0;
+  overflow: hidden;
+  vertical-align: bottom;
+  animation: intro-dots 1.2s steps(4) infinite;
+}
+
+.intro__count {
+  font-family: var(--sans);
+  font-size: clamp(56px, 10vw, 140px);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.05em;
+  line-height: 0.9;
+  text-transform: none;
+}
+
+.intro__count span {
+  font-size: 0.35em;
+  color: var(--ember);
+  margin-left: 0.1em;
+  vertical-align: top;
+}
+
+.intro__hint {
+  position: absolute;
+  right: var(--gutter);
+  bottom: clamp(32px, 5vw, 60px);
+  color: var(--dim);
+}
+
+.intro__bar {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.intro__bar span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, var(--ember) 60%, var(--ember-2));
+  transform-origin: left;
+  box-shadow: 0 0 16px var(--ember);
+}
+
+@keyframes intro-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes intro-blink {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@keyframes intro-step {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes intro-dots {
+  to {
+    width: 1.8em;
+  }
+}
+
+@media (max-width: 520px) {
+  .intro__hint {
+    display: none;
+  }
+}
