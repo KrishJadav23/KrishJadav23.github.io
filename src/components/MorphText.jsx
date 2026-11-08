@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react'
 import './MorphText.css'
 
-const MORPH = 1.1 // seconds spent melting from one word to the next
-const HOLD = 2.4 // seconds each word rests
+const MORPH = 0.9 // seconds spent melting from one word to the next
+const HOLD = 2.6 // seconds each word rests
 
 /*
   Liquid word morph. Two copies of the text blur into each other while an SVG
@@ -30,10 +30,10 @@ export default function MorphText({ words, start = true }) {
     let raf = 0
 
     const set = (fraction) => {
-      b.style.filter = `blur(${Math.min(8 / fraction - 8, 100)}px)`
+      b.style.filter = `blur(${Math.min(4 / fraction - 4, 60)}px)`
       b.style.opacity = `${fraction ** 0.4 * 100}%`
       const inv = 1 - fraction
-      a.style.filter = `blur(${Math.min(8 / inv - 8, 100)}px)`
+      a.style.filter = `blur(${Math.min(4 / inv - 4, 60)}px)`
       a.style.opacity = `${inv ** 0.4 * 100}%`
     }
 

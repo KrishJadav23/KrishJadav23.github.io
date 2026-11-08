@@ -6,7 +6,7 @@ const clamp01 = (x) => Math.min(1, Math.max(0, x))
   Marks [data-reveal] and .line-mask elements with .is-in the first time they scroll
   into view (once only). `ready` delays it until the intro has opened.
 */
-export function useReveal(ready) {
+export function useReveal(ready, key) {
   useEffect(() => {
     if (!ready) return undefined
     const targets = document.querySelectorAll('[data-reveal], [data-inview]')
@@ -27,7 +27,7 @@ export function useReveal(ready) {
     )
     targets.forEach((el) => io.observe(el))
     return () => io.disconnect()
-  }, [ready])
+  }, [ready, key])
 }
 
 /*

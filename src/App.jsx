@@ -1,81 +1,73 @@
-import { useCallback, useState } from 'react'
-import About from './components/About'
+import { useEffect, useState } from 'react'
 import Cursor from './components/Cursor'
 import Featured from './components/Featured'
 import Footer from './components/Footer'
 import Hero from './components/Hero'
-import Intro from './components/Intro'
 import Island from './components/Island'
 import ParticleField from './components/ParticleField'
-import ToolRing from './components/ToolRing'
+import Stack from './components/Stack'
 import Work from './components/Work'
+import { AWS_SPRITE } from './data/awsSprite'
+import { AGENT_ID } from './data/content'
 import { useReveal, useSceneScroll } from './hooks/useScrollEffects'
+import CaseStudy from './pages/CaseStudy'
+import { useRoute } from './router'
 import './App.css'
 
-const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
+function Home({ ready }) {
+  return (
+    <>
+      <Hero ready={ready} />
+      <Featured />
+      <Work />
+      <Stack />
+    </>
+  )
+}
 
 function App() {
-  // With reduced motion there is no intro: everything is shown straight away.
-  const [showIntro, setShowIntro] = useState(() => !prefersReducedMotion())
-  const [revealed, setRevealed] = useState(() => prefersReducedMotion())
+  const route = useRoute()
+  const [ready, setReady] = useState(false)
+  const routeKey = route.page === 'project' ? `p:${route.id}` : 'home'
 
-  const onReveal = useCallback(() => setRevealed(true), [])
-  const onDone = useCallback(() => setShowIntro(false), [])
+  // The opening: wait for the fonts (briefly), then let the hero rise as the particles converge.
+  useEffect(() => {
+    let done = false
+    const go = () => {
+      if (!done) {
+        done = true
+        requestAnimationFrame(() => setReady(true))
+      }
+    }
+    document.fonts?.ready.then(go)
+    const t = setTimeout(go, 900)
+    return () => clearTimeout(t)
+  }, [])
 
-  useReveal(revealed)
+  // Project pages open at the top; a deep link to a home anchor (e.g. #work) scrolls there.
+  useEffect(() => {
+    if (route.page === 'project') window.scrollTo(0, 0)
+    else if (route.anchor) document.getElementById(route.anchor)?.scrollIntoView()
+  }, [routeKey, route.page, route.anchor])
+
+  useReveal(ready, routeKey)
   useSceneScroll()
 
   return (
-    <div className={`app${revealed ? ' is-revealed' : ''}`}>
-      <a className="skip-link" href="#featured">
+    <div className={`app${ready ? ' is-ready' : ''}`}>
+      <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden="true" focusable="false">
+        <defs dangerouslySetInnerHTML={{ __html: AWS_SPRITE }} />
+      </svg>
+      <a className="skip-link" href="#main">
         Skip to content
       </a>
 
-      <ParticleField intro={!revealed} />
-      {showIntro && <Intro onReveal={onReveal} onDone={onDone} />}
-      <Island />
+      <ParticleField />
+      <Island route={route} />
       <Cursor />
 
-      <main>
-        <Hero revealed={revealed} />
-        <Featured />
-        <Work />
-
-        <section
-          id="toolbox"
-          className="section toolbox"
-          aria-labelledby="toolbox-title"
-          data-shape="globe"
-          data-pos="0 -0.75 0.95 0.55"
-          data-pos-m="0 -0.6 0.7 0.45"
-        >
-          <div className="wrap">
-            <div className="section-head" data-inview>
-              <span className="eyebrow">Toolbox</span>
-              <div className="section-head__row">
-                <h2 id="toolbox-title">
-                  <span className="line-mask">
-                    <span style={{ '--d': 0 }}>What I build</span>
-                  </span>
-                  <span className="line-mask">
-                    <span style={{ '--d': 1 }}>
-                      <em className="serif accent">with.</em>
-                    </span>
-                  </span>
-                </h2>
-                <p data-reveal style={{ '--d': 3 }}>
-                  The tools behind the work, orbiting a globe of data. Drag the ring, or use the
-                  arrows; it turns a little as you scroll past.
-                </p>
-              </div>
-            </div>
-          </div>
-          <div data-reveal style={{ '--d': 2 }}>
-            <ToolRing />
-          </div>
-        </section>
-
-        <About />
+      <main id="main" key={routeKey}>
+        {route.page === 'project' && route.id === AGENT_ID ? <CaseStudy /> : <Home ready={ready} />}
       </main>
 
       <Footer />

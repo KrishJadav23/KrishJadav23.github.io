@@ -7,179 +7,128 @@ export const SITE = {
   role: 'AI Product Engineer',
   github: 'https://github.com/KrishJadav23',
   repo: 'https://github.com/KrishJadav23/KrishJadav23.github.io',
-  // Add these to show them in the footer and menu, e.g. 'hello@yourdomain.com'
+  // Add these and they appear in the footer, e.g. 'hello@yourdomain.com'
   email: '',
   linkedin: '',
-  available: true,
 }
 
-// The headline reads "Turning models into <word>"; the word melts between these.
-export const MORPH_WORDS = ['products.', 'insights.', 'interfaces.', 'decisions.']
+// The hero reads "Engineering AI people <word>"; the word melts between these.
+export const HERO_WORDS = ['trust.', 'rely on.', 'understand.']
 
-// The ticker along the bottom of the hero. Edit to match what you do.
-export const CAPABILITIES = [
-  'AI products',
-  'LLM interfaces',
-  'Analytics systems',
-  'Agents & tooling',
-  'Retrieval pipelines',
-  'Design engineering',
-  'Rapid prototyping',
-  'Evaluation',
+// The project's name, used everywhere it appears.
+export const AGENT_NAME = 'Self Serving Analytics Agent'
+export const AGENT_ID = 'analytics-agent'
+
+// Small facts under the hero. Edit freely.
+export const HERO_META = [
+  { label: 'Now', value: AGENT_NAME },
+  { label: 'Stack', value: 'AWS, LangGraph, Claude, React' },
 ]
 
 /*
-  FEATURED: the AI analytics system you built at work.
-  TODO: replace every line below with the real story (name, what it does, your role,
-  the stack). The `demo` block drives the animated product window; keep it believable
-  but you can change the question, plan, query and chart to match your system.
+  The teaser on the home page: a product window that morphs through
+  Ask -> Reason -> Answer as you scroll. The data in the window is illustrative.
 */
-export const FEATURED = {
-  title: 'AI Analytics System',
-  context: 'Built at work',
-  tagline: 'Ask your data a question. Get an answer you can trace.',
+export const AGENT_TEASER = {
+  title: AGENT_NAME,
+  tagline: 'A full-scale, self-serve analytics platform for every dataset in the business. Ask in plain English; every number traces back to one semantic model.',
   steps: [
     {
       label: 'Ask',
       title: 'in plain English',
-      body: 'Anyone on the team types a question the way they would ask an analyst. No SQL, no dashboard hunting.',
+      body: 'Anyone asks the way they would ask a data analyst. The API queues the question and replies at once, so a long answer never times out.',
     },
     {
       label: 'Reason',
-      title: 'plan, query, check',
-      body: 'The system plans the analysis, writes the query, runs it on the warehouse and checks the result before it says a word.',
+      title: 'Claude chooses, code computes',
+      body: 'A LangGraph agent asks Claude on Bedrock to plan using names from the semantic model. A compiler writes the SQL and DuckDB runs it on pinned Parquet.',
     },
     {
       label: 'Answer',
-      title: 'a chart and a sentence',
-      body: 'It replies with the right chart, a plain summary and the query behind it, so every number can be traced back.',
+      title: 'grounded, then streamed',
+      body: 'Claude writes the answer, and only sentences whose numbers appear in the result survive. The chart and its query travel with it.',
     },
   ],
-  stack: ['LLM orchestration', 'Python', 'SQL', 'React', 'Evaluation'],
   demo: {
-    window: 'Analytics · Assistant',
-    question: 'Which regions drove the rise in churn last quarter?',
-    suggestions: ['Weekly active users by plan', 'Top drivers of churn', 'Revenue vs. forecast'],
-    plan: ['Understand the question', 'Pick tables: accounts, events', 'Write and run the query', 'Check the result'],
-    sql: [
-      'SELECT region,',
-      '       AVG(churned) AS churn_rate',
-      'FROM   accounts a',
-      'JOIN   events e USING (account_id)',
-      "WHERE  quarter = '2026-Q3'",
-      'GROUP  BY region',
-      'ORDER  BY churn_rate DESC;',
+    window: 'Analytics Agent',
+    question: 'Why did weekly active users drop in Europe last month?',
+    suggestions: ['Retention by signup cohort', 'Orders vs. forecast this quarter', 'Which features drive upgrades?'],
+    plan: [
+      { node: 'load_context', note: 'memory, model search, pin data' },
+      { node: 'plan', note: 'Claude Sonnet · route: investigate' },
+      { node: 'investigate', note: '3 queries, run together' },
+      { node: 'narrate', note: 'numbers checked against result' },
+    ],
+    query: [
+      '{',
+      '  "measures":   ["weekly_active_users"],',
+      '  "dimensions": ["platform"],',
+      '  "filters":    { "region": "Europe" },',
+      '  "period":     "last_month",',
+      '  "compare":    "previous_period"',
+      '}',
     ],
     bars: [
-      { label: 'EMEA', value: 9.4, display: '9.4%', hot: true },
-      { label: 'NA', value: 5.1, display: '5.1%' },
-      { label: 'APAC', value: 4.2, display: '4.2%' },
-      { label: 'LATAM', value: 3.6, display: '3.6%' },
+      { label: 'Web', value: 3, display: '−3%' },
+      { label: 'iOS', value: 18, display: '−18%', hot: true },
+      { label: 'Android', value: 5, display: '−5%' },
+      { label: 'API', value: 1, display: '−1%' },
     ],
-    insight: 'Churn rose fastest in EMEA, almost twice the next region, concentrated in accounts that never finished onboarding.',
-    sources: 'accounts, events',
+    insight: 'Most of the drop is on iOS, starting the week of the last app release. Web, Android and the API held roughly steady.',
   },
 }
 
 /*
-  Projects (the folder cards)
-  - art: drawn cover when there is no screenshot ('tree' | 'keys' | 'ascii' | 'orbit')
-    Give a project an `image` (e.g. '/projects/my-app.jpg' in public/) to use a screenshot.
-  - theme: card colour ('ember' | 'paper' | 'ink' | 'smoke')
-  - demo: a live demo in the project window ('scene' | 'keyboard' | 'ascii'), optional
-  - links: leave one out to hide its button
+  Work. A project with an id opens its own page at #/work/<id>.
+  `soon: true` shows a "coming soon" card instead.
 */
 export const PROJECTS = [
   {
-    id: 'keyboard-hero',
-    title: 'Keyboard Hero',
-    kind: 'Interactive 3D',
+    id: AGENT_ID,
+    title: AGENT_NAME,
+    kind: 'AI analytics platform on AWS',
     year: '2026',
-    summary: 'A tactile 3D keyboard you can play with the mouse or your own keys.',
-    body: [
-      'A fold-open device built entirely from CSS 3D transforms. Every keycap has a springy press, a glow and its own note on the display.',
-      'Type on your own keyboard and the matching keys go down with you. Try it above.',
-    ],
-    stack: ['CSS 3D', 'React', 'Pointer events'],
-    theme: 'ember',
-    art: 'keys',
-    demo: 'keyboard',
-    links: { code: 'https://github.com/KrishJadav23/KrishJadav23.github.io' },
+    summary: 'Self-serve analytics for every dataset: a LangGraph agent on Bedrock over one governed query engine.',
+    stack: ['Bedrock', 'LangGraph', 'Fargate', 'DuckDB'],
+    theme: 'powder',
+    art: 'graph',
+    wide: true,
   },
   {
-    id: 'night-scene',
-    title: 'Night Scene',
-    kind: 'Generative canvas',
-    year: '2026',
-    summary: 'A glowing tree, drifting clouds and fireflies, painted live on a canvas.',
-    body: [
-      'Tens of thousands of leaf-dots lit from the horizon, clumped with embossed value noise so every cluster catches the light, with a cheap bloom on top.',
-      'The heavy layers are painted once per resize in small tasks, so the page never stalls; each frame only animates stars, birds and fireflies.',
-    ],
-    stack: ['Canvas 2D', 'JavaScript', 'React'],
-    theme: 'paper',
-    art: 'tree',
-    demo: 'scene',
-    links: { code: 'https://github.com/KrishJadav23/KrishJadav23.github.io' },
-  },
-  {
-    id: 'ascii-valley',
-    title: 'ASCII Valley',
-    kind: 'Creative coding',
-    year: '2026',
-    summary: 'Mountains, pines and a lake, dithered into ASCII twelve times a second.',
-    body: [
-      'A procedural landscape sampled on a coarse grid, ordered-dithered with a 4×4 Bayer matrix and drawn as characters from a ten-step ramp.',
-      'The sun sways, the lake ripples, birds cross the sky, and the whole thing leans with your pointer.',
-    ],
-    stack: ['Canvas', 'Bayer dithering', 'JavaScript'],
-    theme: 'ink',
-    art: 'ascii',
-    demo: 'ascii',
-    links: { code: 'https://github.com/KrishJadav23/KrishJadav23.github.io' },
-  },
-  {
-    id: 'portfolio',
-    title: 'This portfolio',
-    kind: 'WebGL · Website',
-    year: '2026',
-    summary: 'Thirty thousand GPU particles that morph between shapes as you scroll.',
-    body: [
-      'Raw WebGL2, no 3D library. Every shape lives on the GPU at once and each particle pours from one to the next on its own delay, drifting on curl noise, swirled by your cursor.',
-      'Around it: a dynamic-island menu, liquid type, cards that morph into their own case study. All of it respects reduced motion and works from the keyboard.',
-    ],
-    stack: ['WebGL2', 'GLSL', 'React 19', 'Vite'],
-    theme: 'smoke',
-    art: 'orbit',
-    links: {
-      live: 'https://krishjadav23.github.io/',
-      code: 'https://github.com/KrishJadav23/KrishJadav23.github.io',
-    },
+    soon: true,
+    title: 'Coming soon',
+    summary: 'The next one is in progress.',
   },
 ]
 
-// The 3D ring in the Toolbox section. `icon` is a file in public/icons/.
-// TODO: add the AI tools you use day to day (e.g. a model provider, a vector database).
-export const TOOLS = [
-  { name: 'Python', use: 'Models, data and APIs', icon: 'python', colour: '#4B8BBE' },
+/*
+  The 3D ring. `aws` names an AWS icon from the sprite; `icon` names a file in public/icons/.
+*/
+export const RING = [
+  { name: 'Amazon Bedrock', use: 'Claude, managed', aws: 'i-bedrock' },
+  { name: 'Claude', use: 'Planning and answers', icon: 'anthropic', colour: '#e8d5c4' },
+  { name: 'LangGraph', use: 'Agent orchestration', icon: 'langchain', colour: '#b4d2e7' },
+  { name: 'AWS Lambda', use: 'APIs and glue', aws: 'i-lambda' },
+  { name: 'ECS Fargate', use: 'Agent and query services', aws: 'i-fargate' },
+  { name: 'Step Functions', use: 'Batch pipelines', aws: 'i-sfn' },
+  { name: 'API Gateway', use: 'The HTTP edge', aws: 'i-apigw' },
+  { name: 'DynamoDB', use: 'State and checkpoints', aws: 'i-ddb' },
+  { name: 'Amazon S3', use: 'Versioned Parquet', aws: 'i-s3' },
+  { name: 'Amazon SQS', use: 'Queues and retries', aws: 'i-sqs' },
+  { name: 'DuckDB', use: 'The query engine', icon: 'duckdb', colour: '#fff000' },
+  { name: 'Python', use: 'Agents and services', icon: 'python', colour: '#6aa6d8' },
+  { name: 'Terraform', use: 'Every resource', icon: 'terraform', colour: '#9b7cf0' },
   { name: 'React', use: 'Product interfaces', icon: 'react', colour: '#61DAFB' },
-  { name: 'JavaScript', use: 'Interaction and logic', icon: 'javascript', colour: '#F7DF1E' },
-  { name: 'WebGL', use: 'Particles and shaders', icon: 'canvas', colour: '#ff8a50' },
-  { name: 'CSS', use: 'Layout, 3D and motion', icon: 'css3', colour: '#3b8eea' },
-  { name: 'HTML', use: 'Accessible markup', icon: 'html5', colour: '#E34F26' },
-  { name: 'Vite', use: 'Dev server and builds', icon: 'vite', colour: '#646CFF' },
-  { name: 'Node.js', use: 'Tooling and scripts', icon: 'nodedotjs', colour: '#5FA04E' },
-  { name: 'Git', use: 'Branches and history', icon: 'git', colour: '#F05032' },
-  { name: 'GitHub', use: 'Code and Pages hosting', icon: 'github', colour: '#ffffff' },
-  { name: 'npm', use: 'Packages', icon: 'npm', colour: '#CB3837' },
 ]
 
-// The About statement. Words wrapped in *stars* are set in the serif.
-export const ABOUT =
-  "I'm Krish, an AI product engineer. I take models out of notebooks and put them in front of people: the *data* underneath, the *reasoning* in the middle, and an interface that makes it feel obvious. I care about answers you can trust and details that make someone say *wow.*"
-
-export const FACTS = [
-  { label: 'Role', value: 'AI Product Engineer' },
-  { label: 'Focus', value: 'AI products, analytics, interfaces' },
-  { label: 'Status', value: 'Open to new work' },
+// The full stack, grouped, under the ring.
+export const STACK = [
+  { group: 'AI', items: ['Amazon Bedrock', 'Claude (Sonnet, Opus)', 'LangGraph', 'langchain-aws', 'Evaluation runs'] },
+  {
+    group: 'AWS',
+    items: ['Lambda', 'ECS Fargate', 'Step Functions', 'API Gateway', 'SQS and SNS', 'EventBridge', 'DynamoDB', 'S3', 'Cognito', 'CloudWatch', 'ECR', 'Secrets Manager'],
+  },
+  { group: 'Data', items: ['DuckDB', 'Parquet', 'Semantic models', 'FastAPI', 'Python'] },
+  { group: 'Delivery', items: ['Terraform', 'GitHub Actions', 'Docker'] },
+  { group: 'Interface', items: ['React', 'TypeScript', 'WebGL and GLSL', 'CSS motion'] },
 ]

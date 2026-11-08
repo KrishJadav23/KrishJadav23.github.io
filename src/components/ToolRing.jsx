@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { TOOLS } from '../data/content'
+import { RING as TOOLS } from '../data/content'
 import { ArrowLeft, ArrowRight } from './Icons'
 import './ToolRing.css'
 
@@ -239,19 +239,25 @@ export default function ToolRing() {
               ref={(el) => {
                 cardRefs.current[i] = el
               }}
-              style={{ '--i': i, '--angle': `${i * STEP}deg`, '--brand': t.colour }}
+              style={{ '--i': i, '--angle': `${i * STEP}deg`, '--brand': t.colour || '#b4d2e7' }}
               onClick={() => api.current.to(i)}
             >
               <div className="tool__face tool__face--front">
                 <span className="tool__index">{String(i + 1).padStart(2, '0')}</span>
-                <span className="tool__icon" style={{ '--icon': `url(/icons/${t.icon}.svg)` }} aria-hidden="true" />
+                {t.aws ? (
+                  <svg className="tool__aws" viewBox="0 0 64 64" aria-hidden="true">
+                    <use href={`#${t.aws}`} />
+                  </svg>
+                ) : (
+                  <span className="tool__icon" style={{ '--icon': `url(/icons/${t.icon}.svg)` }} aria-hidden="true" />
+                )}
                 <div className="tool__words">
                   <h3>{t.name}</h3>
                   <p>{t.use}</p>
                 </div>
               </div>
               <div className="tool__face tool__face--back" aria-hidden="true">
-                <span className="tool__icon tool__icon--ghost" style={{ '--icon': `url(/icons/${t.icon}.svg)` }} />
+                <span className="tool__ghost">{t.name}</span>
               </div>
             </li>
           ))}

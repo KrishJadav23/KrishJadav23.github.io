@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
-import { FEATURED } from '../data/content'
+import { AGENT_ID, AGENT_TEASER } from '../data/content'
+import { routeLink } from '../router'
+import { ArrowRight } from './Icons'
 import './Featured.css'
 
 /*
-  The featured project as a pinned story. As the section scrolls past, the product
-  window morphs through three states: Ask -> Reason -> Answer. The question bubble
-  is one element that travels between them; everything else reshapes around it.
+  The analytics agent, told as a pinned story. As the section scrolls past, the product window
+  morphs through three states: Ask -> Reason -> Answer. The question is one element
+  that travels between them; everything else reshapes around it.
 */
 
 function useTyped(text, active) {
@@ -18,14 +20,14 @@ function useTyped(text, active) {
       i += 1
       setN(i)
       if (i >= text.length) clearInterval(id)
-    }, 28)
+    }, 30)
     return () => clearInterval(id)
   }, [text, active, reduced])
   return reduced ? text : text.slice(0, n)
 }
 
 function AppFrame({ step, live }) {
-  const d = FEATURED.demo
+  const d = AGENT_TEASER.demo
   const typed = useTyped(d.question, live && step === 0)
   const max = Math.max(...d.bars.map((b) => b.value))
 
@@ -38,32 +40,23 @@ function AppFrame({ step, live }) {
           <i />
         </span>
         <span className="app-frame__title">{d.window}</span>
-        <span className="app-frame__state">
-          <span className="app-frame__pulse" />
-          {['Listening', 'Reasoning', 'Answered'][step]}
-        </span>
+        <span className="app-frame__state">{['Listening', 'Reasoning', 'Answered'][step]}</span>
       </div>
 
       <div className="app-frame__body">
-        {/* The question: one element that travels from the composer to the top of the thread */}
         <div className="af-question">
-          <span className="af-question__avatar" aria-hidden="true">
-            You
-          </span>
           <p>
             {step === 0 ? typed : d.question}
             {step === 0 && <span className="af-caret" />}
           </p>
         </div>
 
-        {/* Ask: suggestions under the composer */}
         <div className="af-pane af-pane--ask">
           <p className="af-hello">
             What do you want
             <br />
-            to <em className="serif">know?</em>
+            to know?
           </p>
-          <p className="af-label">Try asking</p>
           <div className="af-chips">
             {d.suggestions.map((s) => (
               <span key={s} className="af-chip">
@@ -73,26 +66,28 @@ function AppFrame({ step, live }) {
           </div>
         </div>
 
-        {/* Reason: the plan, checked off, and the query it wrote */}
         <div className="af-pane af-pane--reason">
           <ol className="af-plan">
             {d.plan.map((p, i) => (
-              <li key={p} style={{ '--i': i }}>
+              <li key={p.node} style={{ '--i': i }}>
                 <span className="af-tick" aria-hidden="true" />
-                {p}
+                <code>{p.node}</code>
+                <span>{p.note}</span>
               </li>
             ))}
           </ol>
-          <pre className="af-code">
-            {d.sql.map((line, i) => (
-              <code key={i} style={{ '--i': i }}>
-                {line}
-              </code>
-            ))}
-          </pre>
+          <div className="af-code">
+            <span className="af-code__head">Semantic query · no SQL from the model</span>
+            <pre>
+              {d.query.map((line, i) => (
+                <code key={i} style={{ '--i': i }}>
+                  {line}
+                </code>
+              ))}
+            </pre>
+          </div>
         </div>
 
-        {/* Answer: a chart and a sentence */}
         <div className="af-pane af-pane--answer">
           <div className="af-chart">
             {d.bars.map((b, i) => (
@@ -104,11 +99,11 @@ function AppFrame({ step, live }) {
             ))}
           </div>
           <div className="af-insight">
-            <span className="af-insight__badge">Insight</span>
             <p>{d.insight}</p>
             <div className="af-insight__meta">
+              <span>Every figure checked against the result</span>
               <span>Query attached</span>
-              <span>Sources: {d.sources}</span>
+              <span>Illustrative data</span>
             </div>
           </div>
         </div>
@@ -158,21 +153,21 @@ export default function Featured() {
       ref={ref}
       className="featured"
       aria-labelledby="featured-title"
-      data-shape="analytics"
-      data-pos="2.6 -0.1 1.3 0.55"
-      data-pos-m="0 -1.6 0.6 0.35"
+      data-shape="dust"
+      data-pos="0 0 1 0.22"
+      data-pos-m="0 0 1 0.3"
     >
       <div className="featured__sticky">
         <div className="wrap featured__grid">
           <div className="featured__text">
-            <span className="eyebrow">Featured · {FEATURED.context}</span>
+            <span className="label">Selected work · 01</span>
             <h2 id="featured-title" className="featured__title">
-              {FEATURED.title}
+              {AGENT_TEASER.title}
             </h2>
-            <p className="featured__tagline">{FEATURED.tagline}</p>
+            <p className="featured__tagline">{AGENT_TEASER.tagline}</p>
 
             <ol className="featured__steps">
-              {FEATURED.steps.map((s, i) => (
+              {AGENT_TEASER.steps.map((s, i) => (
                 <li key={s.label} className={i === step ? 'is-active' : i < step ? 'is-done' : ''}>
                   <span className="featured__step-num">0{i + 1}</span>
                   <div>
@@ -186,11 +181,10 @@ export default function Featured() {
               ))}
             </ol>
 
-            <ul className="featured__stack" aria-label="Built with">
-              {FEATURED.stack.map((s) => (
-                <li key={s}>{s}</li>
-              ))}
-            </ul>
+            <a className="btn btn--quiet featured__cta" href={`#/work/${AGENT_ID}`} onClick={routeLink} data-cursor="Read">
+              Read the case study
+              <ArrowRight />
+            </a>
           </div>
 
           <div className="featured__visual">

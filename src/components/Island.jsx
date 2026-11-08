@@ -1,21 +1,20 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { SITE } from '../data/content'
-import { ArrowUpRight, GitHub } from './Icons'
+import { AGENT_ID, SITE } from '../data/content'
+import { routeLink } from '../router'
+import { ArrowLeft, ArrowUpRight } from './Icons'
 import './Island.css'
 
 const LINKS = [
   { id: 'featured', label: 'Featured' },
-  { id: 'work', label: 'Projects' },
-  { id: 'toolbox', label: 'Toolbox' },
-  { id: 'about', label: 'About' },
-  { id: 'contact', label: 'Contact' },
+  { id: 'work', label: 'Work' },
+  { id: 'stack', label: 'Stack' },
 ]
 
 /*
-  A "dynamic island": a small pill that names the section you're in, and morphs
-  open into the full menu. Its size springs between the two panels' measured sizes.
+  A "dynamic island": a small pill that names where you are, and morphs open into
+  the full menu. Its size springs between the two panels' measured sizes.
 */
-export default function Island() {
+export default function Island({ route }) {
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState('Index')
   const [size, setSize] = useState(null)
@@ -23,9 +22,11 @@ export default function Island() {
   const smallRef = useRef(null)
   const bigRef = useRef(null)
   const buttonRef = useRef(null)
+  const onProject = route.page === 'project'
 
-  // Which section is in the middle of the screen.
+  // Which home section is in the middle of the screen.
   useEffect(() => {
+    if (onProject) return undefined
     const all = [{ id: 'top', label: 'Index' }, ...LINKS]
     const io = new IntersectionObserver(
       (entries) => {
@@ -43,9 +44,10 @@ export default function Island() {
       if (el) io.observe(el)
     })
     return () => io.disconnect()
-  }, [])
+  }, [onProject])
 
-  // Measure whichever panel is showing; the shell springs to that size.
+  const label = onProject ? 'Case study' : active
+
   useLayoutEffect(() => {
     const measure = () => {
       const el = open ? bigRef.current : smallRef.current
@@ -56,9 +58,8 @@ export default function Island() {
     if (smallRef.current) ro.observe(smallRef.current)
     if (bigRef.current) ro.observe(bigRef.current)
     return () => ro.disconnect()
-  }, [open, active])
+  }, [open, label, onProject])
 
-  // Escape and clicks outside close it.
   useEffect(() => {
     if (!open) return undefined
     const onKey = (e) => {
@@ -78,6 +79,11 @@ export default function Island() {
     }
   }, [open])
 
+  const go = (e) => {
+    setOpen(false)
+    routeLink(e)
+  }
+
   return (
     <header className="island-wrap">
       <div
@@ -85,17 +91,22 @@ export default function Island() {
         className={`island${open ? ' island--open' : ''}`}
         style={size ? { width: size.w, height: size.h } : undefined}
       >
-        {/* Collapsed */}
         <div className="island__small" ref={smallRef} inert={open}>
-          <a className="island__brand" href="#top" aria-label={`${SITE.name}, back to top`}>
-            <svg className="island__ring" viewBox="0 0 36 36" aria-hidden="true">
-              <circle cx="18" cy="18" r="15" />
-              <circle className="island__ring-fill" cx="18" cy="18" r="15" pathLength="1" />
-            </svg>
-            <span className="island__mono">KJ</span>
-          </a>
-          <span className="island__label" aria-live="off">
-            <span key={active}>{active}</span>
+          {onProject ? (
+            <a className="island__brand" href="#work" onClick={routeLink} aria-label="Back to all work">
+              <ArrowLeft />
+            </a>
+          ) : (
+            <a className="island__brand" href="#top" aria-label={`${SITE.name}, back to top`}>
+              <svg className="island__ring" viewBox="0 0 36 36" aria-hidden="true">
+                <circle cx="18" cy="18" r="15" />
+                <circle className="island__ring-fill" cx="18" cy="18" r="15" pathLength="1" />
+              </svg>
+              <span className="island__mono">KJ</span>
+            </a>
+          )}
+          <span className="island__label">
+            <span key={label}>{label}</span>
           </span>
           <button
             ref={buttonRef}
@@ -110,12 +121,10 @@ export default function Island() {
           </button>
         </div>
 
-        {/* Expanded */}
         <div className="island__big" id="island-menu" ref={bigRef} inert={!open}>
           <div className="island__top">
             <span className="island__who">
-              <span className="island__status" aria-hidden="true" />
-              {SITE.name} · {SITE.role}
+              {SITE.name}, {SITE.role}
             </span>
             <button type="button" className="island__close" onClick={() => setOpen(false)} aria-label="Close menu">
               <span className="island__x" aria-hidden="true" />
@@ -123,23 +132,37 @@ export default function Island() {
           </div>
           <nav aria-label="Primary">
             <ul className="island__links">
+              <li style={{ '--i': 0 }}>
+                <a href="#top" onClick={go}>
+                  <span className="island__num">00</span>Index
+                </a>
+              </li>
               {LINKS.map((l, i) => (
-                <li key={l.id} style={{ '--i': i }}>
-                  <a href={`#${l.id}`} onClick={() => setOpen(false)}>
+                <li key={l.id} style={{ '--i': i + 1 }}>
+                  <a href={`#${l.id}`} onClick={go}>
                     <span className="island__num">0{i + 1}</span>
                     {l.label}
                   </a>
                 </li>
               ))}
+              <li style={{ '--i': 4 }}>
+                <a href={`#/work/${AGENT_ID}`} onClick={go}>
+                  <span className="island__num">04</span>Case study
+                </a>
+              </li>
             </ul>
           </nav>
           <div className="island__foot">
             <a className="island__chip" href={SITE.github} target="_blank" rel="noreferrer">
-              <GitHub />
               GitHub
               <ArrowUpRight />
             </a>
-            {SITE.available && <span className="island__avail">Open to new work</span>}
+            {SITE.linkedin && (
+              <a className="island__chip" href={SITE.linkedin} target="_blank" rel="noreferrer">
+                LinkedIn
+                <ArrowUpRight />
+              </a>
+            )}
           </div>
         </div>
       </div>

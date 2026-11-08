@@ -52,7 +52,8 @@ in vec4 aP1;
 in vec4 aP2;
 in vec4 aP3;
 in vec4 aP4;
-in vec4 aX; // delay, size, phase, spare
+in vec4 aX; // delay, size, spin/phase, kind+colour
+in vec2 aOff; // sand: how far the cursor has pushed this particle, on screen
 
 uniform float uFrom;
 uniform float uTo;
@@ -66,12 +67,26 @@ uniform float uAspect;
 uniform float uSize;
 uniform float uPR;
 uniform float uScrollVel;
-uniform vec3 uTrail[8]; // cursor wake: ndc xy, strength
+uniform float uFine[5];  // per shape: 0 mostly triangles, 1 only fine points
 
 out float vAlpha;
-out float vHeat;
+out float vGlow;
+out float vRot;
+out float vKind;
+out float vTone;
+out float vPx;
+out float vCode;
+out float vGrad;
 
 ${NOISE}
+
+float fineOf(float i){
+  if(i<0.5) return uFine[0];
+  if(i<1.5) return uFine[1];
+  if(i<2.5) return uFine[2];
+  if(i<3.5) return uFine[3];
+  return uFine[4];
+}
 
 vec4 pick(float i){
   if(i<0.5) return aP0;
@@ -83,73 +98,165 @@ vec4 pick(float i){
 
 void main(){
   // Each particle leaves a little later than the last, so shapes pour into each other.
-  float d = aX.x * 0.5;
-  float t = smoothstep(d, d + 0.5, uMix);
+  float d = aX.x * 0.45;
+  float t = smoothstep(d, d + 0.55, uMix);
   vec4 a = pick(uFrom);
   vec4 b = pick(uTo);
   vec3 p = mix(a.xyz, b.xyz, t);
-  float bright = mix(a.w, b.w, t);
+  // w carries brightness plus 2 x a colour code (0 own tone, 1 poppy, 2 white, 3 powder).
+  float codeA = floor(a.w * 0.5);
+  float codeB = floor(b.w * 0.5);
+  float bright = mix(a.w - 2.0 * codeA, b.w - 2.0 * codeB, t);
+  vCode = t < 0.5 ? codeA : codeB;
+  vGrad = smoothstep(2.3, -2.5, p.y); // 0 at the top of a shape, 1 at its base
 
-  // Drift: a slow curl of noise, much stronger while in flight between shapes.
+  // Drift: a slow curl of noise, stronger while in flight.
   float flight = sin(t * 3.14159);
-  float tm = uTime * 0.12 * uMotion;
-  vec3 q = p * 0.32 + vec3(aX.z * 3.0);
+  float tm = uTime * 0.1 * uMotion;
+  vec3 q = p * 0.35 + vec3(aX.z * 3.0);
   vec3 n = vec3(snoise(q + vec3(0.0, 0.0, tm)), snoise(q + vec3(19.1, 0.0, tm)), snoise(q + vec3(0.0, 33.7, tm)));
-  p += n * (0.035 + flight * 1.6);
+  p += n * (0.03 + flight * 1.1);
 
-  vec4 world = uModel * vec4(p, 1.0);
-  vec4 view = uView * world;
+  vec4 view = uView * uModel * vec4(p, 1.0);
   vec4 clip = uProj * view;
 
-  // The cursor's wake pushes particles aside and swirls them, like a hand through water.
-  vec2 ndc = clip.xy / clip.w;
-  vec2 push = vec2(0.0);
-  float touch = 0.0;
-  for (int i = 0; i < 8; i++) {
-    vec3 tr = uTrail[i];
-    vec2 dm = ndc - tr.xy;
-    dm.x *= uAspect;
-    float dist = length(dm) + 1e-4;
-    float f = exp(-dist * dist * 14.0) * tr.z;
-    vec2 dir = dm / dist;
-    push += (dir * 0.09 + vec2(-dir.y, dir.x) * 0.07) * f;
-    touch += f;
-  }
-  push.x /= uAspect;
-  // Fast scrolling stretches the field like jelly.
-  push.y += uScrollVel * (aX.z - 0.5) * 0.06;
+  // Sand: the cursor's push, simulated on the CPU per particle, applied on screen.
+  vec2 push = aOff;
+  float touch = min(1.0, length(aOff) * 9.0);
+  push.y += uScrollVel * (aX.z - 0.5) * 0.05;
   clip.xy += push * clip.w;
   gl_Position = clip;
 
-  // Signals: waves of activity rolling through the shape.
-  float fire = smoothstep(0.62, 0.95, snoise(p * 0.75 + vec3(0.0, 0.0, uTime * 0.45 * uMotion)));
-  vHeat = clamp(fire * bright * 1.4 + touch * 0.9, 0.0, 1.0);
+  // Signals: slow waves of light rolling through the shape.
+  float fire = smoothstep(0.6, 0.95, snoise(p * 0.7 + vec3(0.0, 0.0, uTime * 0.35 * uMotion)));
+  vGlow = clamp(fire * bright + touch * 0.8, 0.0, 1.0);
 
   float depth = -view.z;
-  float fade = clamp(1.25 - (depth - 9.0) / 7.0, 0.15, 1.0);
-  vAlpha = (0.16 + 0.84 * bright) * fade;
-  gl_PointSize = uSize * aX.y * uPR * (12.0 / depth) * (1.0 + vHeat * 0.6);
+  // Depth: the near side grows and brightens, the far side shrinks into the dark.
+  float fade = clamp(1.35 - (depth - 7.4) / 4.0, 0.06, 1.0);
+  vAlpha = (0.12 + 0.88 * bright) * fade;
+
+  // Outlined triangles or fine points, in a mix each shape chooses.
+  float fine = mix(fineOf(uFrom), fineOf(uTo), t);
+  vKind = fract(aX.w * 7.31) > 0.22 + 0.78 * fine ? 1.0 : 0.0;
+  vTone = aX.w;
+  vRot = aX.z * 6.2832 + uTime * (aX.z - 0.5) * 0.5 * uMotion;
+  float px = vKind > 0.5 ? uSize * aX.y : 1.9 + aX.y * 0.8;
+  px *= uPR * pow(9.0 / depth, 1.6) * (1.0 + vGlow * 0.35);
+  vPx = px;
+  gl_PointSize = px;
 }
 `
 
 export const FRAG = /* glsl */ `#version 300 es
 precision highp float;
 in float vAlpha;
-in float vHeat;
-uniform vec3 uCold;
-uniform vec3 uWarm;
-uniform vec3 uHot;
+in float vGlow;
+in float vRot;
+in float vKind;
+in float vTone;
+in float vPx;
+in float vCode;
+in float vGrad;
+uniform vec3 uPowder;
+uniform vec3 uInk;
+uniform vec3 uPoppy;
 uniform float uDim;
 out vec4 outColor;
+
+// Signed distance to an equilateral triangle (Inigo Quilez).
+float sdTri(vec2 p, float r){
+  const float k = 1.7320508;
+  p.x = abs(p.x) - r;
+  p.y = p.y + r / k;
+  if (p.x + k * p.y > 0.0) p = vec2(p.x - k * p.y, -k * p.x - p.y) / 2.0;
+  p.x -= clamp(p.x, -2.0 * r, 0.0);
+  return -length(p) * sign(p.y);
+}
+
 void main(){
   vec2 c = gl_PointCoord - 0.5;
-  float r = length(c);
-  if (r > 0.5) discard;
-  float a = smoothstep(0.5, 0.0, r);
-  a *= a;
-  vec3 col = mix(uCold, uWarm, smoothstep(0.0, 0.6, vHeat));
-  col = mix(col, uHot, smoothstep(0.6, 1.0, vHeat));
-  float alpha = a * vAlpha * uDim;
+  float a;
+  if (vKind > 0.5) {
+    float cs = cos(vRot);
+    float sn = sin(vRot);
+    c = mat2(cs, -sn, sn, cs) * c;
+    float d = abs(sdTri(c, 0.26));
+    float px = 1.0 / max(vPx, 1.0);
+    a = 1.0 - smoothstep(px * 0.6, px * 1.8, d);
+  } else {
+    float r = length(c);
+    if (r > 0.5) discard;
+    a = smoothstep(0.5, 0.1, r);
+  }
+  if (a < 0.01) discard;
+  vec3 col;
+  if (vCode > 0.5 && vCode < 1.5) col = uPoppy;
+  else if (vCode > 1.5 && vCode < 2.5) col = uInk;
+  else if (vCode > 3.5) {
+    // A scan's gradient: powder at the crown, white through the face, poppy at the shoulders
+    col = mix(uPowder, uInk, smoothstep(0.05, 0.4, vGrad));
+    col = mix(col, uPoppy, smoothstep(0.7, 1.05, vGrad) * 0.6);
+  }
+  else if (vCode > 2.5) col = uPowder;
+  else col = vTone < 0.035 ? uPoppy : (vTone < 0.28 ? uInk : uPowder);
+  col = mix(col, uInk, vGlow * 0.45);
+  float alpha = a * vAlpha * uDim * (vKind > 0.5 ? 0.62 + vGlow * 0.38 : 0.85 + vGlow * 0.15);
   outColor = vec4(col * alpha, alpha);
+}
+`
+
+/*
+  The ambient layer: always moving, independent of the shapes.
+  type 0  wave ribbons flowing across the screen (screen space)
+  type 1  axon paths with a signal travelling along each one
+*/
+export const AMB_VERT = /* glsl */ `#version 300 es
+precision highp float;
+in vec2 aPos;   // wave: u along the ribbon, ribbon centre y · axon: x, y
+in vec4 aData;  // type, param, phase, size
+uniform float uTime;
+uniform float uAmb;
+uniform float uPR;
+uniform float uAspect;
+out float vA;
+out float vHot;
+void main(){
+  float t = uTime;
+  vec2 pos;
+  float a;
+  float hot = 0.0;
+  if (aData.x < 0.5) {
+    float x = fract(aPos.x + t * 0.008 * (0.6 + aData.z)) * 2.6 - 1.3;
+    float y = aPos.y + 0.07 * sin(x * 2.6 + t * 0.35 + aData.z * 6.0) + 0.025 * sin(x * 7.0 - t * 0.5) + aData.y * 0.035;
+    pos = vec2(x, y);
+    a = (0.1 + 0.16 * (0.5 + 0.5 * sin(x * 4.0 + t * 0.8 + aData.z * 9.0))) * smoothstep(1.3, 0.9, abs(x));
+  } else {
+    pos = aPos;
+    float head = fract(t * 0.07 + aData.z);
+    float d = fract(head - aData.y);
+    hot = exp(-d * 30.0);
+    a = 0.05 + 0.8 * exp(-d * 9.0);
+  }
+  gl_Position = vec4(pos, 0.0, 1.0);
+  gl_PointSize = aData.w * uPR * (1.0 + hot * 1.4);
+  vA = a * uAmb;
+  vHot = hot;
+}
+`
+
+export const AMB_FRAG = /* glsl */ `#version 300 es
+precision highp float;
+in float vA;
+in float vHot;
+uniform vec3 uPowder;
+uniform vec3 uPoppy;
+out vec4 outColor;
+void main(){
+  float r = length(gl_PointCoord - 0.5);
+  if (r > 0.5) discard;
+  float a = smoothstep(0.5, 0.15, r) * vA;
+  vec3 col = mix(uPowder, uPoppy, smoothstep(0.55, 1.0, vHot));
+  outColor = vec4(col * a, a);
 }
 `

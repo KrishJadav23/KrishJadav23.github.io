@@ -31,6 +31,14 @@ export default function Cursor() {
     const onMove = (e) => {
       x = e.clientX
       y = e.clientY
+      const root = document.documentElement
+      const orbit = root.classList.contains('can-orbit') || root.classList.contains('is-orbiting')
+      if (orbit && el.dataset.mode !== 'link') {
+        el.dataset.mode = 'label'
+        labelRef.current.textContent = 'Drag'
+      } else if (!orbit && labelRef.current.textContent === 'Drag' && el.dataset.mode === 'label') {
+        el.dataset.mode = ''
+      }
       if (!shown) {
         shown = true
         cx = x

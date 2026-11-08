@@ -1,9 +1,7 @@
-import { useCallback, useEffect, useState } from 'react'
-import { flushSync } from 'react-dom'
 import { PROJECTS } from '../data/content'
+import { navigate } from '../router'
 import { ArrowUpRight } from './Icons'
 import ProjectArt from './ProjectArt'
-import ProjectDialog from './ProjectDialog'
 import './Work.css'
 
 // The light follows the pointer across a card.
@@ -13,12 +11,37 @@ const onSpot = (e) => {
   e.currentTarget.style.setProperty('--my', `${e.clientY - r.top}px`)
 }
 
-function Folder({ project, index, onOpen }) {
+// Opening a card morphs its front into the project page's hero.
+const open = (e) => {
+  if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+  e.preventDefault()
+  const front = e.currentTarget.closest('.folder')?.querySelector('.folder__front')
+  navigate(e.currentTarget.getAttribute('href'), front)
+}
+
+function Soon({ project, index }) {
+  return (
+    <article className="folder folder--soon" style={{ '--d': index }} data-reveal aria-label="Coming soon">
+      <div className="folder__back" aria-hidden="true" />
+      <div className="folder__front">
+        <span className="folder__num" aria-hidden="true">
+          {String(index + 1).padStart(2, '0')}
+        </span>
+        <div className="folder__text">
+          <h3>{project.title}</h3>
+          <p>{project.summary}</p>
+        </div>
+      </div>
+    </article>
+  )
+}
+
+function Folder({ project, index }) {
+  if (project.soon) return <Soon project={project} index={index} />
   const num = String(index + 1).padStart(2, '0')
   return (
     <article
-      id={`project-${project.id}`}
-      className={`folder folder--${project.theme}`}
+      className={`folder folder--${project.theme}${project.wide ? ' folder--wide' : ''}`}
       style={{ '--d': index }}
       data-reveal
       data-cursor="Open"
@@ -48,14 +71,9 @@ function Folder({ project, index, onOpen }) {
         </span>
         <div className="folder__text">
           <h3>
-            <button
-              type="button"
-              className="folder__hit"
-              onClick={(e) => onOpen(project, e.currentTarget.closest('.folder')?.querySelector('.folder__front'))}
-              aria-haspopup="dialog"
-            >
+            <a className="folder__hit" href={`#/work/${project.id}`} onClick={open}>
               {project.title}
-            </button>
+            </a>
           </h3>
           <p>{project.summary}</p>
         </div>
@@ -65,83 +83,40 @@ function Folder({ project, index, onOpen }) {
 }
 
 export default function Work() {
-  const [open, setOpen] = useState(null)
-
-  // The card morphs into the project window (View Transitions), where supported.
-  const onOpen = useCallback((p, from) => {
-    const show = () => {
-      flushSync(() => setOpen(p))
-      history.replaceState(null, '', `#project-${p.id}`)
-    }
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (!document.startViewTransition || !from || reduced) {
-      show()
-      return
-    }
-    from.style.viewTransitionName = 'project-morph'
-    document.documentElement.classList.add('vt-morph')
-    const vt = document.startViewTransition(() => {
-      from.style.viewTransitionName = ''
-      show()
-    })
-    vt.finished.finally(() => document.documentElement.classList.remove('vt-morph'))
-  }, [])
-
-  const onClose = useCallback(() => {
-    setOpen(null)
-    if (location.hash.startsWith('#project-')) history.replaceState(null, '', '#work')
-  }, [])
-
-  // Deep links: #project-<id> opens that project.
-  useEffect(() => {
-    const fromHash = () => {
-      const id = location.hash.match(/^#project-(.+)$/)?.[1]
-      const project = PROJECTS.find((p) => p.id === id)
-      if (project) setOpen(project)
-    }
-    fromHash()
-    window.addEventListener('hashchange', fromHash)
-    return () => window.removeEventListener('hashchange', fromHash)
-  }, [])
-
   return (
     <section
       id="work"
       className="section work"
       aria-labelledby="work-title"
-      data-shape="scatter"
-      data-pos="0 0 1 0.4"
-      data-pos-m="0 0 1 0.35"
+      data-shape="dust"
+      data-pos="0 0 1 0.22"
+      data-pos-m="0 0 1 0.3"
     >
       <div className="wrap">
         <div className="section-head" data-inview>
-          <span className="eyebrow">More projects</span>
-          <div className="section-head__row">
-            <h2 id="work-title">
-              <span className="line-mask">
-                <span style={{ '--d': 0 }}>Things I build</span>
+          <span className="label">Work</span>
+          <h2 id="work-title">
+            <span className="line-mask">
+              <span style={{ '--d': 0 }}>One system in production,</span>
+            </span>
+            <span className="line-mask">
+              <span style={{ '--d': 1 }} className="powder">
+                more on the way.
               </span>
-              <span className="line-mask">
-                <span style={{ '--d': 1 }}>
-                  <em className="serif accent">for fun.</em>
-                </span>
-              </span>
-            </h2>
-            <p data-reveal style={{ '--d': 3 }}>
-              Experiments in motion, 3D and generative graphics. Open a folder: each one morphs into
-              its case study, with a live demo inside.
-            </p>
-          </div>
+            </span>
+          </h2>
+          <p data-reveal style={{ '--d': 3 }}>
+            Open the folder for the full case study: the architecture, the agent and the guardrails
+            that keep every number honest.
+          </p>
         </div>
 
         <div className="folders">
           {PROJECTS.map((p, i) => (
-            <Folder key={p.id} project={p} index={i} onOpen={onOpen} />
+            <Folder key={p.id || p.title} project={p} index={i} />
           ))}
         </div>
       </div>
-
-      <ProjectDialog project={open} index={open ? PROJECTS.indexOf(open) : 0} onClose={onClose} />
     </section>
   )
 }

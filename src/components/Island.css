@@ -12,7 +12,7 @@
     transform 0.9s var(--ease-out);
 }
 
-.app:not(.is-revealed) .island-wrap {
+.app:not(.is-ready) .island-wrap {
   opacity: 0;
   transform: translateY(-24px) scale(0.9);
 }
@@ -23,7 +23,7 @@
   overflow: hidden;
   border: 1px solid var(--line-strong);
   border-radius: 28px;
-  background: rgba(14, 13, 13, 0.72);
+  background: rgba(14, 16, 19, 0.72);
   backdrop-filter: blur(20px) saturate(150%);
   -webkit-backdrop-filter: blur(20px) saturate(150%);
   box-shadow:
@@ -39,7 +39,7 @@
 
 .island--open {
   border-radius: 30px;
-  background: rgba(14, 13, 13, 0.9);
+  background: rgba(14, 16, 19, 0.92);
 }
 
 .island__small,
@@ -106,12 +106,12 @@
 
 .island__ring circle {
   fill: none;
-  stroke: rgba(255, 245, 230, 0.12);
+  stroke: rgba(180, 210, 231, 0.14);
   stroke-width: 1.5;
 }
 
 .island__ring .island__ring-fill {
-  stroke: var(--ember);
+  stroke: var(--powder);
   stroke-linecap: round;
   stroke-dasharray: 1;
   stroke-dashoffset: calc(1 - var(--scroll, 0));
@@ -122,6 +122,7 @@
   min-width: 92px;
   padding: 0 10px;
   font-size: 14px;
+  font-weight: 400;
   color: var(--ink);
 }
 
@@ -147,7 +148,7 @@
   flex: none;
   border: 0;
   border-radius: 50%;
-  background: rgba(255, 245, 230, 0.07);
+  background: rgba(180, 210, 231, 0.08);
   cursor: pointer;
   transition:
     background-color 0.25s,
@@ -156,7 +157,7 @@
 
 .island__toggle:hover,
 .island__close:hover {
-  background: rgba(255, 245, 230, 0.14);
+  background: rgba(180, 210, 231, 0.16);
   transform: scale(1.06);
 }
 
@@ -223,19 +224,11 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  font-family: var(--mono);
   font-size: 12px;
+  font-weight: 500;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--muted);
-}
-
-.island__status {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--green);
-  box-shadow: 0 0 10px var(--green);
 }
 
 .island__links {
@@ -264,8 +257,8 @@
   gap: 16px;
   padding: 8px 14px;
   border-radius: 16px;
-  font-size: clamp(30px, 6vw, 40px);
-  font-weight: 500;
+  font-size: clamp(28px, 6vw, 38px);
+  font-weight: 400;
   letter-spacing: -0.04em;
   line-height: 1.1;
   text-decoration: none;
@@ -277,13 +270,13 @@
 
 .island__links a:hover {
   padding-left: 22px;
-  background: rgba(255, 245, 230, 0.05);
-  color: var(--ember-2);
+  background: rgba(180, 210, 231, 0.05);
+  color: var(--powder);
 }
 
 .island__num {
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 11px;
   letter-spacing: 0;
   color: var(--dim);
 }
@@ -292,7 +285,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 10px;
   margin-top: 12px;
   padding: 12px 14px 0;
@@ -306,14 +299,14 @@
   min-height: 44px;
   padding: 0 16px;
   border-radius: 999px;
-  background: rgba(255, 245, 230, 0.07);
+  background: rgba(180, 210, 231, 0.08);
   font-size: 14px;
   text-decoration: none;
   transition: background-color 0.25s;
 }
 
 .island__chip:hover {
-  background: rgba(255, 245, 230, 0.14);
+  background: rgba(180, 210, 231, 0.16);
 }
 
 .island__chip svg {
@@ -321,7 +314,7 @@
   height: 15px;
 }
 
-.island__avail {
-  font-size: 13px;
-  color: var(--muted);
+.island__brand svg:not(.island__ring) {
+  width: 16px;
+  height: 16px;
 }

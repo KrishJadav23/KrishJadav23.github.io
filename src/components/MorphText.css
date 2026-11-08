@@ -7,7 +7,7 @@
   display: inline-grid;
   justify-items: start;
   white-space: nowrap;
-  filter: url(#morph-threshold) blur(0.4px);
+  filter: url(#morph-threshold) blur(0.35px);
 }
 
 .morph__stage > * {
@@ -19,7 +19,7 @@
 }
 
 .morph__word {
-  color: var(--ember-2);
+  color: inherit;
   will-change: filter, opacity;
 }
 

@@ -2,15 +2,41 @@
   position: relative;
 }
 
-/* ---- Toolbox ---------------------------------------------------------------- */
-.toolbox {
+/* ---- Stack ---------------------------------------------------------------------- */
+.stack {
   overflow-x: clip;
 }
 
+.stack__groups {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 32px 28px;
+  margin-top: clamp(56px, 9vh, 96px);
+}
+
+.stack__groups > div {
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.stack__groups ul {
+  display: grid;
+  gap: 6px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 15px;
+}
+
+@media (max-width: 1000px) {
+  .stack__groups {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 /* A hairline above some sections, fading at both ends */
-.toolbox::before,
-.about::before,
-.work::before {
+.work::before,
+.stack::before {
   content: '';
   position: absolute;
   top: 0;
@@ -24,7 +50,6 @@
 /* No WebGL: a still glow stands in for the particles. */
 .no-webgl .field {
   background:
-    radial-gradient(circle at 72% 42%, rgba(255, 106, 43, 0.25), transparent 30%),
-    radial-gradient(circle at 72% 42%, rgba(255, 245, 230, 0.08), transparent 50%),
+    radial-gradient(circle at 72% 42%, rgba(180, 210, 231, 0.14), transparent 35%),
     var(--bg);
 }
