@@ -1,7 +1,8 @@
 /*
   Target shapes for the particle field. Each is a Float32Array of N * 4:
   x, y, z and w = brightness (0..1) + 2 * colour code
-    colour code 0: the particle's own tone · 1: poppy · 2: white · 3: powder · 4: height gradient
+    colour code 0: the particle's own tone · 1: poppy · 2: white · 3: powder
+                4: height gradient (scan) · 5: depth gradient (near white, middle powder, far poppy)
 
   0 dust    sparse field filling the view (the page starts here)
   1 brain   three-quarter view: lobes, cerebellum, stem, winding folds, lit from above
@@ -15,10 +16,10 @@
 
 export const SHAPE = { dust: 0, brain: 1, self: 2, eye: 3, cube: 4 }
 export const SHAPE_COUNT = 5
-export const COLOUR = { own: 0, poppy: 1, white: 2, powder: 3, gradient: 4 }
+export const COLOUR = { own: 0, poppy: 1, white: 2, powder: 3, gradient: 4, depth: 5 }
 
 // Per shape: 0 draws mostly outlined triangles, 1 draws only fine points.
-export const FINE = [0.55, 0.42, 1, 0.3, 1]
+export const FINE = [0.8, 1, 1, 1, 1]
 
 export const mulberry = (seed) => {
   let a = seed
@@ -189,7 +190,7 @@ export function brain(N) {
     if (!inStem && rand() > 0.2 + 0.8 * crest ** 2.5) continue
     // The light catches the crests and the side facing it; the grooves fall into shadow.
     const lit = light(nx, ny, nz, 0.4, 0.75, 0.55)
-    put(x * S, (y + 0.05) * S, z * S, (0.22 + 0.78 * lit) * (0.4 + 0.6 * crest), !inStem && rand() < 0.015 ? 1 : 0)
+    put(x * S, (y + 0.05) * S, z * S, (0.3 + 0.7 * lit) * (0.45 + 0.55 * crest), !inStem && rand() < 0.01 ? COLOUR.poppy : COLOUR.gradient)
   }
   return out
 }
@@ -282,47 +283,49 @@ export function eye(N) {
   const W = 2.0
   const upper = (x) => 0.92 * (1 - (x / W) ** 2) ** 0.85
   const lower = (x) => -0.7 * (1 - (x / W) ** 2) ** 0.95
-  const bulge = (x, y) => 0.55 * Math.sqrt(Math.max(0, 1 - (x * x + y * y) / 5.5))
+  const bulge = (x, y) => 1.0 * Math.sqrt(Math.max(0, 1 - (x * x + y * y) / 5.5))
+  const D = COLOUR.depth
   while (count() < N) {
     const r = rand()
     if (r < 0.24) {
       const x = (rand() * 2 - 1) * W
       const top = rand() < 0.55
       const y = (top ? upper(x) : lower(x)) + (rand() - 0.5) * 0.05 + (rand() < 0.3 ? (top ? 0.12 : -0.1) : 0)
-      put(x, y, bulge(x, y), 0.85 + rand() * 0.15)
+      put(x, y, bulge(x, y), 0.85 + rand() * 0.15, D)
     } else if (r < 0.3) {
       const k = Math.floor(rand() * 15)
       const x0 = -W * 0.8 + (k / 14) * W * 1.6
       const y0 = upper(x0)
       const t = rand()
       const reach = 0.12 + 0.18 * (1 - Math.abs(x0) / W)
-      put(x0 + t * reach * (x0 / W) * 0.8, y0 + t * reach, bulge(x0, y0), 0.7)
+      put(x0 + t * reach * (x0 / W) * 0.8, y0 + t * reach, bulge(x0, y0) + t * 0.1, 0.7, D)
     } else if (r < 0.62) {
       const a = (Math.floor(rand() * 90) / 90) * Math.PI * 2 + (rand() - 0.5) * 0.03
       const rr = 0.26 + rand() * 0.5
       const x = Math.cos(a) * rr
       const y = Math.sin(a) * rr
-      put(x, y, bulge(x, y) + 0.06, 0.35 + 0.6 * rr)
+      put(x, y, bulge(x, y) + 0.06, 0.4 + 0.6 * rr, D)
     } else if (r < 0.7) {
       const a = rand() * Math.PI * 2
       const rr = 0.77 + (rand() - 0.5) * 0.04
       put(Math.cos(a) * rr, Math.sin(a) * rr, bulge(0, 0), 1, COLOUR.poppy)
     } else if (r < 0.75) {
       const a = rand() * Math.PI * 2
-      put(Math.cos(a) * 0.26, Math.sin(a) * 0.26, bulge(0, 0) + 0.06, 0.95)
+      put(Math.cos(a) * 0.26, Math.sin(a) * 0.26, bulge(0, 0) + 0.06, 0.95, D)
     } else if (r < 0.77) {
       const [dx, dy] = dir(rand)
-      put(0.3 + dx * 0.07, 0.32 + dy * 0.07, 0.7, 1, COLOUR.white)
+      put(0.3 + dx * 0.07, 0.32 + dy * 0.07, bulge(0, 0) + 0.12, 1, COLOUR.white)
     } else if (r < 0.88) {
       const x = (rand() * 2 - 1) * W * 0.95
       const y = lower(x) + rand() * (upper(x) - lower(x))
       if (Math.hypot(x, y) < 0.8) continue
-      put(x, y, bulge(x, y), 0.18 + rand() * 0.12)
+      put(x, y, bulge(x, y), 0.22 + rand() * 0.14, D)
     } else {
       const ring = rand() < 0.5 ? 2.55 : 2.9
       const a = rand() * Math.PI * 2
       if (Math.floor((a / (Math.PI * 2)) * 60) % 3 === 0) continue
-      put(Math.cos(a) * ring, Math.sin(a) * ring * 0.5, -0.2, 0.3)
+      // tilted, so the rings sweep from behind the eye to in front of it
+      put(Math.cos(a) * ring, Math.sin(a) * ring * 0.5, Math.sin(a) * 0.9 - 0.2, 0.32, D)
     }
   }
   return out

@@ -77,6 +77,7 @@ out float vTone;
 out float vPx;
 out float vCode;
 out float vGrad;
+out float vNear;
 
 ${NOISE}
 
@@ -120,6 +121,11 @@ void main(){
   vec4 view = uView * uModel * vec4(p, 1.0);
   vec4 clip = uProj * view;
 
+  // How near this particle is within its own shape: 1 at the front, 0 at the back.
+  float centre = (uView * uModel * vec4(0.0, 0.0, 0.0, 1.0)).z;
+  float scale = length(uModel[0].xyz);
+  vNear = clamp((view.z - centre) / (2.3 * scale) + 0.5, 0.0, 1.0);
+
   // Sand: the cursor's push, simulated on the CPU per particle, applied on screen.
   vec2 push = aOff;
   float touch = min(1.0, length(aOff) * 9.0);
@@ -158,6 +164,7 @@ in float vTone;
 in float vPx;
 in float vCode;
 in float vGrad;
+in float vNear;
 uniform vec3 uPowder;
 uniform vec3 uInk;
 uniform vec3 uPoppy;
@@ -193,15 +200,25 @@ void main(){
   vec3 col;
   if (vCode > 0.5 && vCode < 1.5) col = uPoppy;
   else if (vCode > 1.5 && vCode < 2.5) col = uInk;
+  else if (vCode > 4.5) {
+    // Depth gradient: the far side glows poppy, the middle powder, the nearest surface white.
+    col = mix(uPoppy, uPowder, smoothstep(0.18, 0.5, vNear));
+    col = mix(col, uInk, smoothstep(0.62, 0.9, vNear));
+  }
   else if (vCode > 3.5) {
-    // A scan's gradient: powder at the crown, white through the face, poppy at the shoulders
+    // A scan's gradient: powder at the crown, white through the face, poppy at the shoulders,
+    // then lifted toward white where the surface comes nearest and cooled where it turns away.
     col = mix(uPowder, uInk, smoothstep(0.05, 0.4, vGrad));
     col = mix(col, uPoppy, smoothstep(0.7, 1.05, vGrad) * 0.6);
+    col = mix(col, uInk, smoothstep(0.62, 0.95, vNear) * 0.55);
+    col = mix(col, uPowder * 0.75, smoothstep(0.45, 0.1, vNear) * 0.5);
   }
   else if (vCode > 2.5) col = uPowder;
   else col = vTone < 0.035 ? uPoppy : (vTone < 0.28 ? uInk : uPowder);
   col = mix(col, uInk, vGlow * 0.45);
-  float alpha = a * vAlpha * uDim * (vKind > 0.5 ? 0.62 + vGlow * 0.38 : 0.85 + vGlow * 0.15);
+  // Gradient-coloured grain is brighter at the front and recedes toward the back.
+  float depthLight = vCode > 3.5 ? 0.45 + 0.75 * vNear : 1.0;
+  float alpha = a * vAlpha * uDim * depthLight * (vKind > 0.5 ? 0.62 + vGlow * 0.38 : 0.85 + vGlow * 0.15);
   outColor = vec4(col * alpha, alpha);
 }
 `

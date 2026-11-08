@@ -2,14 +2,11 @@ import { useEffect, useRef } from 'react'
 import './Cursor.css'
 
 /*
-  A soft follower that morphs with what's under the pointer:
-  a small ring by default, a larger halo over links and buttons, and a labelled
-  disc over anything marked data-cursor="Label". Fine pointers only; the system
-  cursor stays as it is.
+  A small ring that follows the pointer and opens a little over anything you can
+  click. Fine pointers only; the system cursor stays as it is.
 */
 export default function Cursor() {
   const ref = useRef(null)
-  const labelRef = useRef(null)
 
   useEffect(() => {
     const el = ref.current
@@ -31,14 +28,6 @@ export default function Cursor() {
     const onMove = (e) => {
       x = e.clientX
       y = e.clientY
-      const root = document.documentElement
-      const orbit = root.classList.contains('can-orbit') || root.classList.contains('is-orbiting')
-      if (orbit && el.dataset.mode !== 'link') {
-        el.dataset.mode = 'label'
-        labelRef.current.textContent = 'Drag'
-      } else if (!orbit && labelRef.current.textContent === 'Drag' && el.dataset.mode === 'label') {
-        el.dataset.mode = ''
-      }
       if (!shown) {
         shown = true
         cx = x
@@ -48,12 +37,8 @@ export default function Cursor() {
     }
     const onOver = (e) => {
       const target = e.target instanceof Element ? e.target : null
-      const labelled = target?.closest('[data-cursor]')
-      const link = target?.closest('a, button, [role="button"], .toolring__stage')
-      if (labelled) {
-        el.dataset.mode = 'label'
-        labelRef.current.textContent = labelled.dataset.cursor
-      } else if (link) {
+      const link = target?.closest('a, button, [role="button"], .toolring__stage, [data-cursor]')
+      if (link) {
         el.dataset.mode = 'link'
       } else {
         el.dataset.mode = ''
@@ -87,9 +72,7 @@ export default function Cursor() {
 
   return (
     <div ref={ref} className="cursor" aria-hidden="true">
-      <span className="cursor__blob">
-        <span ref={labelRef} className="cursor__label" />
-      </span>
+      <span className="cursor__blob" />
     </div>
   )
 }
