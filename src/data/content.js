@@ -19,10 +19,10 @@ export const HERO_WORDS = ['trust.', 'rely on.', 'understand.']
 export const AGENT_NAME = 'Self Serving Analytics Agent'
 export const AGENT_ID = 'analytics-agent'
 
-// Small facts under the hero. Edit freely.
+// Small facts along the bottom of the hero. Edit freely.
 export const HERO_META = [
-  { label: 'Now', value: AGENT_NAME },
-  { label: 'Stack', value: 'AWS, LangGraph, Claude, React' },
+  { label: 'Currently building', value: 'A self-serve analytics agent' },
+  { label: 'Day-to-day stack', value: 'Python, AWS, LangGraph, Terraform, GitHub CI/CD' },
 ]
 
 /*
@@ -97,7 +97,7 @@ export const PROJECTS = [
   {
     soon: true,
     title: 'Coming soon',
-    summary: 'The next one is in progress.',
+    summary: 'Small games and creative experiments, currently on the workbench.',
   },
 ]
 
@@ -106,7 +106,7 @@ export const PROJECTS = [
 */
 export const RING = [
   { name: 'Amazon Bedrock', use: 'Claude, managed', aws: 'i-bedrock' },
-  { name: 'Claude', use: 'Planning and answers', icon: 'anthropic', colour: '#e8d5c4' },
+  { name: 'GitHub Actions', use: 'CI/CD for everything', icon: 'githubactions', colour: '#7fb2ff' },
   { name: 'LangGraph', use: 'Agent orchestration', icon: 'langchain', colour: '#b4d2e7' },
   { name: 'AWS Lambda', use: 'APIs and glue', aws: 'i-lambda' },
   { name: 'ECS Fargate', use: 'Agent and query services', aws: 'i-fargate' },
@@ -129,6 +129,6 @@ export const STACK = [
     items: ['Lambda', 'ECS Fargate', 'Step Functions', 'API Gateway', 'SQS and SNS', 'EventBridge', 'DynamoDB', 'S3', 'Cognito', 'CloudWatch', 'ECR', 'Secrets Manager'],
   },
   { group: 'Data', items: ['DuckDB', 'Parquet', 'Semantic models', 'FastAPI', 'Python'] },
-  { group: 'Delivery', items: ['Terraform', 'GitHub Actions', 'Docker'] },
+  { group: 'Delivery', items: ['Terraform', 'GitHub Actions CI/CD', 'Docker'] },
   { group: 'Interface', items: ['React', 'TypeScript', 'WebGL and GLSL', 'CSS motion'] },
 ]

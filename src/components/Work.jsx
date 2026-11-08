@@ -1,6 +1,6 @@
 import { PROJECTS } from '../data/content'
 import { navigate } from '../router'
-import { ArrowUpRight } from './Icons'
+import { ArrowRight, ArrowUpRight } from './Icons'
 import ProjectArt from './ProjectArt'
 import './Work.css'
 
@@ -76,6 +76,16 @@ function Folder({ project, index }) {
             </a>
           </h3>
           <p>{project.summary}</p>
+          <div className="folder__meta" aria-hidden="true">
+            <ul>
+              {project.stack.map((s) => (
+                <li key={s}>{s}</li>
+              ))}
+            </ul>
+            <span className="folder__go">
+              See how it’s built <ArrowRight />
+            </span>
+          </div>
         </div>
       </div>
     </article>
@@ -97,17 +107,17 @@ export default function Work() {
           <span className="label">Work</span>
           <h2 id="work-title">
             <span className="line-mask">
-              <span style={{ '--d': 0 }}>One system in production,</span>
+              <span style={{ '--d': 0 }}>The serious one,</span>
             </span>
             <span className="line-mask">
               <span style={{ '--d': 1 }} className="powder">
-                more on the way.
+                and the fun ones next.
               </span>
             </span>
           </h2>
           <p data-reveal style={{ '--d': 3 }}>
-            Open the folder for the full case study: the architecture, the agent and the guardrails
-            that keep every number honest.
+            The analytics agent is the main Production AI System: open it to see the architecture,
+            the orchestration from data ingestion to user answers. Games and creative experiments are on the way.
           </p>
         </div>
 

@@ -13,7 +13,7 @@
 }
 
 .hero__title {
-  margin: 28px 0 30px;
+  margin: 28px 0 22px;
   font-size: clamp(48px, 6.6vw, 112px);
   font-weight: 400;
   letter-spacing: -0.055em;
@@ -34,6 +34,16 @@
 .hero__line > span {
   display: inline-block;
   transform: translateY(105%);
+}
+
+/* The second voice: bolder, smaller, a little lighter in spirit */
+.hero__aside {
+  margin: -6px 0 22px;
+  font-size: clamp(19px, 1.8vw, 26px);
+  font-weight: 550;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+  color: var(--ink);
 }
 
 .hero__sub {
@@ -74,6 +84,7 @@
 
 /* ---- Opening: the headline rises line by line as the particles converge ---- */
 .hero__label,
+.hero__aside,
 .hero__sub,
 .hero__actions,
 .hero__meta {
@@ -87,6 +98,7 @@
 }
 
 .is-ready .hero__label,
+.is-ready .hero__aside,
 .is-ready .hero__sub,
 .is-ready .hero__actions,
 .is-ready .hero__meta {

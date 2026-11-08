@@ -5,57 +5,75 @@ import './ProjectArt.css'
   screenshot. Give a project an `image` in content.js to use a picture instead.
 */
 
-// A small architecture graph with requests travelling through it.
-const G_NODES = [
-  ['API', 30, 110],
-  ['Queue', 120, 110],
-  ['Agent', 210, 60],
-  ['Bedrock', 310, 30],
-  ['Query', 210, 170],
-  ['Parquet', 310, 200],
-  ['State', 310, 115],
-]
+// The analytics agent's request path, as a live flow: requests travel through it.
+const NW = 132
+const NH = 46
+const G_NODES = {
+  q: ['Question', 'browser', 'i-user', 24, 107],
+  api: ['API Gateway', 'HTTP API', 'i-apigw', 196, 107],
+  sqs: ['SQS', 'chat queue', 'i-sqs', 368, 107],
+  agent: ['Agent', 'LangGraph', 'i-fargate', 540, 107],
+  bed: ['Bedrock', 'plans, writes', 'i-bedrock', 730, 26],
+  qs: ['Query', 'DuckDB', 'i-fargate', 730, 107],
+  ddb: ['DynamoDB', 'state', 'i-ddb', 730, 188],
+  pq: ['Parquet', 'on S3', 'i-s3', 920, 107],
+}
 const G_EDGES = [
-  [0, 1],
-  [1, 2],
-  [2, 3],
-  [2, 4],
-  [4, 5],
-  [2, 6],
+  ['q', 'api'],
+  ['api', 'sqs'],
+  ['sqs', 'agent'],
+  ['agent', 'bed', true],
+  ['agent', 'qs'],
+  ['agent', 'ddb'],
+  ['qs', 'pq'],
 ]
 
 function GraphArt() {
-  const at = (i) => [G_NODES[i][1] + 32, G_NODES[i][2] + 13]
+  const right = (k) => [G_NODES[k][3] + NW, G_NODES[k][4] + NH / 2]
+  const left = (k) => [G_NODES[k][3], G_NODES[k][4] + NH / 2]
   return (
-    <svg className="art art--graph" viewBox="0 0 400 260" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-      <rect width="400" height="260" fill="#0b0c0e" />
-      <g stroke="#b4d2e7" strokeOpacity="0.06">
-        {Array.from({ length: 21 }, (_, i) => (
-          <line key={`v${i}`} x1={i * 20} x2={i * 20} y1="0" y2="260" />
-        ))}
-        {Array.from({ length: 14 }, (_, i) => (
-          <line key={`h${i}`} y1={i * 20} y2={i * 20} x1="0" x2="400" />
-        ))}
-      </g>
-      {G_EDGES.map(([a, b], i) => {
-        const [x1, y1] = at(a)
-        const [x2, y2] = at(b)
+    <svg className="art art--graph" viewBox="0 0 1080 260" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+      <defs>
+        <pattern id="art-grid" width="24" height="24" patternUnits="userSpaceOnUse">
+          <path d="M24 0H0V24" fill="none" stroke="#b4d2e7" strokeOpacity="0.06" />
+        </pattern>
+      </defs>
+      <rect width="1080" height="260" fill="url(#art-grid)" />
+      {G_EDGES.map(([a, b, hot], i) => {
+        const [x1, y1] = right(a)
+        const [x2, y2] = left(b)
         const mx = (x1 + x2) / 2
-        const d = `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`
+        const d = y1 === y2 ? `M${x1},${y1} L${x2},${y2}` : `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`
         return (
           <g key={i}>
-            <path d={d} fill="none" stroke="#b4d2e7" strokeOpacity="0.35" strokeWidth="1" />
-            <circle r="2.4" fill={i === 2 ? '#ec4a32' : '#edf2f6'}>
-              <animateMotion dur={`${2.2 + i * 0.35}s`} repeatCount="indefinite" path={d} />
+            <path d={d} fill="none" stroke="#b4d2e7" strokeOpacity="0.32" strokeWidth="1.2" />
+            <circle r="3" fill={hot ? '#ec4a32' : '#edf2f6'}>
+              <animateMotion dur={`${1.6 + (i % 3) * 0.45}s`} begin={`${i * 0.3}s`} repeatCount="indefinite" path={d} />
             </circle>
           </g>
         )
       })}
-      {G_NODES.map(([label, x, y]) => (
-        <g key={label}>
-          <rect x={x} y={y} width="64" height="26" rx="6" fill="#121418" stroke="#b4d2e7" strokeOpacity="0.45" />
-          <text x={x + 32} y={y + 17} textAnchor="middle" fontSize="10" fill="#edf2f6" fontFamily="Geist Mono, monospace">
+      {Object.entries(G_NODES).map(([k, [label, sub, icon, x, y]]) => (
+        <g key={k}>
+          <rect
+            x={x}
+            y={y}
+            width={NW}
+            height={NH}
+            rx="9"
+            fill="#121418"
+            stroke="#b4d2e7"
+            strokeOpacity={k === 'agent' ? 0.7 : 0.28}
+            strokeDasharray={k === 'q' ? '4 3' : undefined}
+          />
+          <svg x={x + 10} y={y + 11} width="24" height="24" viewBox="0 0 64 64" style={{ color: '#b4d2e7' }}>
+            <use href={`#${icon}`} />
+          </svg>
+          <text x={x + 44} y={y + 21} fontSize="12.5" fill="#edf2f6" fontFamily="Inter, sans-serif" fontWeight="500">
             {label}
+          </text>
+          <text x={x + 44} y={y + 35} fontSize="10.5" fill="#95a1ac" fontFamily="Inter, sans-serif">
+            {sub}
           </text>
         </g>
       ))}

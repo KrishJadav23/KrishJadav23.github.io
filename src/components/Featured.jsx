@@ -182,7 +182,7 @@ export default function Featured() {
             </ol>
 
             <a className="btn btn--quiet featured__cta" href={`#/work/${AGENT_ID}`} onClick={routeLink} data-cursor="Read">
-              Read the case study
+              See how it’s built
               <ArrowRight />
             </a>
           </div>

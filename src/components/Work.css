@@ -49,9 +49,64 @@
   --f-edge: rgba(180, 210, 231, 0.2);
 }
 
+/* The wide card sets the row's height; the coming-soon card matches it. */
 .folder--wide {
   grid-column: span 2;
+  aspect-ratio: 1.95 / 1;
+}
+
+.folder--wide .folder__art {
+  flex-basis: 62%;
+}
+
+.folder--soon {
   aspect-ratio: auto;
+}
+
+.folder__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 20px;
+  margin-top: 12px;
+}
+
+.folder__meta ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.folder__meta li {
+  padding: 3px 10px;
+  border: 1px solid color-mix(in srgb, var(--f-ink) 22%, transparent);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 450;
+  color: var(--f-ink);
+}
+
+.folder__go {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--f-ink);
+}
+
+.folder__go svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.4s var(--ease-out);
+}
+
+.folder:hover .folder__go svg {
+  transform: translateX(4px);
 }
 
 /* The back of the folder, with a trapezoid tab. */
@@ -335,6 +390,10 @@
   .folder--wide {
     aspect-ratio: 2 / 1.25;
   }
+
+  .folder--soon {
+    aspect-ratio: 4 / 3;
+  }
 }
 
 @media (max-width: 600px) {
@@ -347,6 +406,15 @@
   .folder--wide {
     grid-column: auto;
     aspect-ratio: 3 / 3.4;
+  }
+
+  /* Room for the chips and the link under the flow */
+  .folder--wide {
+    aspect-ratio: 3 / 4.1;
+  }
+
+  .folder--wide .folder__art {
+    flex-basis: 46%;
   }
 }
 

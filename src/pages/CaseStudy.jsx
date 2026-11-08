@@ -195,7 +195,7 @@ export default function CaseStudy() {
           <ArrowLeft />
           All work
         </a>
-        <p className="label case-hero__label">Case study · Built at work · 2026</p>
+        <p className="label case-hero__label">How it’s built · At work · 2026</p>
         <h1 className="case-hero__title case-hero__title--long">
           <span className="line-mask">
             <span>{AGENT_NAME}</span>

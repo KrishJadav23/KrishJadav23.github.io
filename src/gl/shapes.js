@@ -190,7 +190,13 @@ export function brain(N) {
     if (!inStem && rand() > 0.2 + 0.8 * crest ** 2.5) continue
     // The light catches the crests and the side facing it; the grooves fall into shadow.
     const lit = light(nx, ny, nz, 0.4, 0.75, 0.55)
-    put(x * S, (y + 0.05) * S, z * S, (0.3 + 0.7 * lit) * (0.45 + 0.55 * crest), !inStem && rand() < 0.01 ? COLOUR.poppy : COLOUR.gradient)
+    // Contours in poppy: the grooves between folds and the side turned from the light go red,
+    // the lit crests stay white-to-powder. Warm shadow against cool light is what reads as depth.
+    const shade = 1 - (lit - 0.16) / 0.84
+    const red = Math.min(0.9, Math.max(0, shade * 0.95 + (1 - crest) * 0.7 - 0.55))
+    const colour = rand() < red ? COLOUR.poppy : COLOUR.gradient
+    const b = (0.3 + 0.7 * lit) * (0.45 + 0.55 * crest)
+    put(x * S, (y + 0.05) * S, z * S, colour === COLOUR.poppy ? Math.max(b, 0.42) : b, colour)
   }
   return out
 }

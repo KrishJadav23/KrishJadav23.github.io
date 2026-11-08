@@ -18,8 +18,7 @@ export default function Stack() {
             </span>
           </h2>
           <p data-reveal style={{ '--d': 3 }}>
-            The services and tools behind the analytics agent. Drag the ring, or use the
-            arrows.
+            What I reach for at work and for fun. Drag the ring, or use the arrows.
           </p>
         </div>
       </div>

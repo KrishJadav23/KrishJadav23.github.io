@@ -46,7 +46,7 @@ export default function Island({ route }) {
     return () => io.disconnect()
   }, [onProject])
 
-  const label = onProject ? 'Case study' : active
+  const label = onProject ? 'Analytics agent' : active
 
   useLayoutEffect(() => {
     const measure = () => {
@@ -147,7 +147,7 @@ export default function Island({ route }) {
               ))}
               <li style={{ '--i': 4 }}>
                 <a href={`#/work/${AGENT_ID}`} onClick={go}>
-                  <span className="island__num">04</span>Case study
+                  <span className="island__num">04</span>The analytics agent
                 </a>
               </li>
             </ul>

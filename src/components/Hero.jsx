@@ -34,16 +34,21 @@ export default function Hero({ ready }) {
           </span>
         </h1>
 
+        <p className="hero__aside" style={{ '--d': 3 }}>
+          And a creative engineer who enjoys building things for fun!
+        </p>
+
         <p className="hero__sub" style={{ '--d': 4 }}>
-          I build AI products end to end: the agent, the data platform underneath it and the
-          interface on top. Most recently a self-serve analytics agent on AWS that answers questions
-          about any of the company’s data, with numbers you can trace.
+          I work as an AI product engineer, architecting and building a self-serve analytics agent on AWS that
+          answers Natural Lanauge questions about our company’s data (With the goal to replace tradition Analytic Platforms). In my spare I enjoy 
+          building cool things and desinging unique UI designs... As you can tell by this website :D
+          
         </p>
 
         <div className="hero__actions" style={{ '--d': 5 }}>
           <Magnetic>
             <a className="btn btn--primary" href={`#/work/${AGENT_ID}`} onClick={routeLink}>
-              Read the case study
+              See how it’s built
               <ArrowRight />
             </a>
           </Magnetic>
@@ -63,7 +68,7 @@ export default function Hero({ ready }) {
             </div>
           ))}
           <div>
-            <dt className="label">Elsewhere</dt>
+            <dt className="label">Code</dt>
             <dd>
               <a className="link" href={SITE.github} target="_blank" rel="noreferrer">
                 GitHub
