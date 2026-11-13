@@ -1,0 +1,132 @@
+.hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: max(700px, 100svh);
+  padding-block: 130px 150px;
+}
+
+.hero__inner {
+  transform: translateY(calc(var(--hero-p, 0) * -70px));
+  opacity: calc(1 - var(--hero-p, 0) * 1.4);
+}
+
+.hero__title {
+  margin: 28px 0 22px;
+  font-size: clamp(48px, 6.6vw, 112px);
+  font-weight: 400;
+  letter-spacing: -0.055em;
+  line-height: 0.94;
+}
+
+.hero__title .morph__word {
+  color: var(--powder);
+}
+
+.hero__line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.1em;
+  margin-bottom: -0.1em;
+}
+
+.hero__line > span {
+  display: inline-block;
+  transform: translateY(105%);
+}
+
+/* The second voice: bolder, smaller, a little lighter in spirit */
+.hero__aside {
+  margin: -6px 0 22px;
+  font-size: clamp(19px, 1.8vw, 26px);
+  font-weight: 550;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+  color: var(--ink);
+}
+
+.hero__sub {
+  max-width: 46ch;
+  color: var(--muted);
+  font-size: clamp(16px, 1.25vw, 18px);
+  line-height: 1.6;
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 28px;
+  margin-top: 40px;
+}
+
+.hero__meta {
+  position: absolute;
+  right: 0;
+  bottom: 36px;
+  left: 0;
+}
+
+.hero__meta dl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 56px;
+  margin: 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+.hero__meta dd {
+  margin: 4px 0 0;
+  font-size: 15px;
+}
+
+/* ---- Opening: the headline rises line by line as the particles converge ---- */
+.hero__label,
+.hero__aside,
+.hero__sub,
+.hero__actions,
+.hero__meta {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+.is-ready .hero__line > span {
+  transform: none;
+  transition: transform 1.4s var(--ease-out) calc(0.25s + var(--d) * 0.12s);
+}
+
+.is-ready .hero__label,
+.is-ready .hero__aside,
+.is-ready .hero__sub,
+.is-ready .hero__actions,
+.is-ready .hero__meta {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 1.2s var(--ease-out) calc(0.3s + var(--d) * 0.1s),
+    transform 1.2s var(--ease-out) calc(0.3s + var(--d) * 0.1s);
+}
+
+@media (max-width: 760px) {
+  .hero {
+    justify-content: flex-start;
+    padding-top: 112px;
+  }
+
+  .hero__title {
+    font-size: clamp(46px, 13vw, 84px);
+  }
+
+  .hero__meta {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero__actions .magnetic,
+  .hero__actions .btn {
+    width: 100%;
+  }
+}

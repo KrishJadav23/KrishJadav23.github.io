@@ -1,0 +1,460 @@
+.section {
+  position: relative;
+  padding-block: clamp(96px, 15vh, 170px);
+}
+
+.folders {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(16px, 2vw, 28px);
+}
+
+/* ---- Folder card ---------------------------------------------------------- */
+.folder {
+  --r: 20px;
+  --tab: 24px;
+  --f-back: #7d2417;
+  --f-front: linear-gradient(170deg, #ef563f 0%, #d93a23 60%, #b52c19 100%);
+  --f-ink: #fff5f2;
+  --f-muted: rgba(255, 238, 233, 0.82);
+  --f-edge: rgba(255, 255, 255, 0.28);
+
+  position: relative;
+  aspect-ratio: 3 / 4.1;
+  perspective: 1100px;
+  color: var(--f-ink);
+}
+
+.folder--powder {
+  --f-back: #7f9bb0;
+  --f-front: linear-gradient(175deg, #c6def0 0%, #b4d2e7 55%, #a3c3da 100%);
+  --f-ink: #0b0c0e;
+  --f-muted: #2f3d48;
+  --f-edge: rgba(255, 255, 255, 0.7);
+}
+
+.folder--raven {
+  --f-back: #1b1e23;
+  --f-front: linear-gradient(170deg, #17191d 0%, #0d0e11 100%);
+  --f-ink: #edf2f6;
+  --f-muted: #95a1ac;
+  --f-edge: rgba(180, 210, 231, 0.16);
+}
+
+.folder--slate {
+  --f-back: #2a323a;
+  --f-front: linear-gradient(170deg, #252c33 0%, #171b20 100%);
+  --f-ink: #edf2f6;
+  --f-muted: #9aa7b2;
+  --f-edge: rgba(180, 210, 231, 0.2);
+}
+
+/* The wide card sets the row's height; the coming-soon card matches it. */
+.folder--wide {
+  grid-column: span 2;
+  aspect-ratio: 1.95 / 1;
+}
+
+.folder--wide .folder__art {
+  flex-basis: 62%;
+}
+
+.folder--soon {
+  aspect-ratio: auto;
+}
+
+.folder__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 20px;
+  margin-top: 12px;
+}
+
+.folder__meta ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.folder__meta li {
+  padding: 3px 10px;
+  border: 1px solid color-mix(in srgb, var(--f-ink) 22%, transparent);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 450;
+  color: var(--f-ink);
+}
+
+.folder__go {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--f-ink);
+}
+
+.folder__go svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.4s var(--ease-out);
+}
+
+.folder:hover .folder__go svg {
+  transform: translateX(4px);
+}
+
+/* The back of the folder, with a trapezoid tab. */
+.folder__back {
+  position: absolute;
+  inset: var(--tab) 0 0 0;
+  border-radius: 0 var(--r) var(--r) var(--r);
+  background: var(--f-back);
+  box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.8);
+}
+
+.folder__back::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% - 1px);
+  left: 0;
+  width: 46%;
+  height: calc(var(--tab) + 2px);
+  border-radius: 14px 14px 0 0;
+  background: var(--f-back);
+  transform: perspective(60px) rotateX(18deg);
+  transform-origin: 0 100%;
+}
+
+/* A sheet of paper inside; it slides out when the folder opens. */
+.folder__paper {
+  position: absolute;
+  top: calc(var(--tab) + 12px);
+  right: 14px;
+  left: 14px;
+  height: 46%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background:
+    repeating-linear-gradient(180deg, transparent 0 22px, rgba(11, 12, 14, 0.07) 22px 23px),
+    #f5f8fa;
+  color: #0b0c0e;
+  box-shadow: 0 -2px 18px rgba(0, 0, 0, 0.18);
+  transform: translateY(16px);
+  transition: transform 0.7s var(--ease-out);
+}
+
+.folder__paper::before {
+  content: '';
+  position: absolute;
+  inset: 6px -4px auto;
+  z-index: -1;
+  height: 100%;
+  border-radius: 12px;
+  background: #dbe4ea;
+  transform: rotate(-3deg);
+}
+
+.folder__paper-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #c23a25;
+}
+
+.folder__paper ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.folder__paper li {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #e3ebf1;
+  font-size: 12px;
+  font-weight: 450;
+}
+
+.folder__paper-year {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: #5e6872;
+}
+
+/* The front flap: art, number and words. It tips forward on hover. */
+.folder__front {
+  position: absolute;
+  inset: calc(var(--tab) + 26px) 0 0 0;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  border-radius: var(--r);
+  background: var(--f-front);
+  box-shadow:
+    inset 0 1px 0 var(--f-edge),
+    0 -10px 30px -12px rgba(0, 0, 0, 0.5),
+    0 24px 50px -24px rgba(0, 0, 0, 0.9);
+  transform-origin: 50% 100%;
+  transition:
+    transform 0.8s var(--ease-out),
+    box-shadow 0.8s var(--ease-out);
+}
+
+/* Pointer light */
+.folder__front::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(360px circle at var(--mx, 50%) calc(var(--my, 50%) - 52px), rgba(255, 255, 255, 0.16), transparent 45%);
+  opacity: 0;
+  transition: opacity 0.4s;
+  pointer-events: none;
+}
+
+.folder__art {
+  position: relative;
+  flex: 0 0 60%;
+  overflow: hidden;
+  border-radius: calc(var(--r) - 9px);
+  background: #0b0c0e;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.folder__art > * {
+  transition: transform 1s var(--ease-out);
+}
+
+.folder__num {
+  position: absolute;
+  top: 18px;
+  left: 22px;
+  font-size: clamp(32px, 3vw, 44px);
+  font-weight: 400;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  color: #fff;
+  text-shadow: 0 2px 20px rgba(0, 10, 40, 0.5);
+}
+
+.folder__arrow {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #fff;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+  transition:
+    transform 0.5s var(--spring),
+    background-color 0.3s,
+    color 0.3s;
+}
+
+.folder__arrow svg {
+  width: 16px;
+  height: 16px;
+}
+
+.folder__text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 14px 12px 8px;
+}
+
+.folder__text h3 {
+  font-size: clamp(20px, 1.7vw, 24px);
+  font-weight: 400;
+  letter-spacing: -0.025em;
+}
+
+.folder__text p {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  color: var(--f-muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* The title's button stretches over the whole front flap. */
+.folder__hit {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-decoration: none;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.folder__hit::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: var(--r);
+}
+
+.folder__hit:focus-visible {
+  outline: none;
+}
+
+/* The ring goes round the whole flap (the button's stretched hit area). */
+.folder__hit:focus-visible::after {
+  outline: 1.5px solid var(--powder);
+  outline-offset: 4px;
+}
+
+/* ---- Open on hover / keyboard focus ---- */
+@media (hover: hover) {
+  .folder:hover .folder__front,
+  .folder:has(.folder__hit:focus-visible) .folder__front {
+    transform: rotateX(-22deg);
+    box-shadow:
+      inset 0 1px 0 var(--f-edge),
+      0 -16px 40px -12px rgba(0, 0, 0, 0.6),
+      0 40px 60px -24px rgba(0, 0, 0, 0.9);
+  }
+
+  .folder:hover .folder__paper,
+  .folder:has(.folder__hit:focus-visible) .folder__paper {
+    transform: translateY(-34px) rotate(-1.5deg);
+  }
+
+  .folder:hover .folder__front::after {
+    opacity: 1;
+  }
+
+  .folder:hover .folder__art > * {
+    transform: scale(1.04);
+  }
+
+  .folder:hover .folder__arrow {
+    transform: rotate(45deg) scale(1.08);
+    background: #fff;
+    color: #0b0c0e;
+  }
+}
+
+/* Touch: the paper always peeks out a little. */
+@media (hover: none) {
+  .folder__paper {
+    transform: translateY(-14px);
+  }
+}
+
+.folder:active .folder__front {
+  transform: rotateX(-14deg) scale(0.985);
+  transition-duration: 0.15s;
+}
+
+@media (max-width: 1100px) {
+  .folders {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .folder {
+    aspect-ratio: 4 / 4.6;
+  }
+
+  .folder--wide {
+    aspect-ratio: 2 / 1.25;
+  }
+
+  .folder--soon {
+    aspect-ratio: 4 / 3;
+  }
+}
+
+@media (max-width: 600px) {
+  .folders {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .folder,
+  .folder--wide {
+    grid-column: auto;
+    aspect-ratio: 3 / 3.4;
+  }
+
+  /* Room for the chips and the link under the flow */
+  .folder--wide {
+    aspect-ratio: 3 / 4.1;
+  }
+
+  .folder--wide .folder__art {
+    flex-basis: 46%;
+  }
+}
+
+/* ---- Coming soon: an empty folder, outlined ---- */
+.folder--soon:hover .folder__front {
+  transform: none !important;
+}
+
+.folder--soon {
+  --f-ink: #edf2f6;
+  --f-muted: #95a1ac;
+}
+
+.folder--soon .folder__back,
+.folder--soon .folder__back::before {
+  background: transparent;
+  box-shadow: none;
+}
+
+.folder--soon .folder__back {
+  border: 1px dashed var(--line-strong);
+}
+
+.folder--soon .folder__back::before {
+  border: 1px dashed var(--line-strong);
+  border-bottom: 0;
+}
+
+.folder--soon .folder__front {
+  background: rgba(180, 210, 231, 0.025);
+  border: 1px solid var(--line);
+  box-shadow: none;
+  justify-content: flex-end;
+}
+
+.folder--soon .folder__num {
+  color: var(--dim);
+  text-shadow: none;
+}
+
+.folder--soon .folder__text h3 {
+  color: var(--muted);
+}

@@ -1,0 +1,322 @@
+.island-wrap {
+  overflow-x: clip; /* the hidden menu panel must never widen the page */
+  position: fixed;
+  top: 16px;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  transition:
+    opacity 0.8s var(--ease-out),
+    transform 0.9s var(--ease-out);
+}
+
+.app:not(.is-ready) .island-wrap {
+  opacity: 0;
+  transform: translateY(-24px) scale(0.9);
+}
+
+/* The shell: its width, height and corners spring between the two panels. */
+.island {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: 28px;
+  background: rgba(14, 16, 19, 0.72);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  box-shadow:
+    0 20px 60px -20px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  pointer-events: auto;
+  transition:
+    width 0.6s cubic-bezier(0.32, 1.25, 0.45, 1),
+    height 0.6s cubic-bezier(0.32, 1.25, 0.45, 1),
+    border-radius 0.6s var(--ease-out),
+    background-color 0.4s;
+}
+
+.island--open {
+  border-radius: 30px;
+  background: rgba(14, 16, 19, 0.92);
+}
+
+.island__small,
+.island__big {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transition:
+    opacity 0.35s ease,
+    filter 0.45s ease,
+    transform 0.55s var(--ease-out);
+}
+
+.island--open .island__small,
+.island:not(.island--open) .island__big {
+  opacity: 0;
+  filter: blur(10px);
+  pointer-events: none;
+}
+
+.island:not(.island--open) .island__big {
+  transform: scale(0.94);
+  transform-origin: 50% 0;
+}
+
+.island--open .island__small {
+  transform: scale(1.1);
+}
+
+/* ---- Collapsed ---- */
+.island__small {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px;
+  white-space: nowrap;
+}
+
+.island__brand {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: 50%;
+  text-decoration: none;
+}
+
+.island__mono {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.island__ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.island__ring circle {
+  fill: none;
+  stroke: rgba(180, 210, 231, 0.14);
+  stroke-width: 1.5;
+}
+
+.island__ring .island__ring-fill {
+  stroke: var(--powder);
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: calc(1 - var(--scroll, 0));
+}
+
+.island__label {
+  display: inline-block;
+  min-width: 92px;
+  padding: 0 10px;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--ink);
+}
+
+.island__label > span {
+  display: inline-block;
+  animation: island-label 0.5s var(--ease-out);
+}
+
+@keyframes island-label {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translateY(8px);
+  }
+}
+
+.island__toggle,
+.island__close {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(180, 210, 231, 0.08);
+  cursor: pointer;
+  transition:
+    background-color 0.25s,
+    transform 0.3s var(--spring);
+}
+
+.island__toggle:hover,
+.island__close:hover {
+  background: rgba(180, 210, 231, 0.16);
+  transform: scale(1.06);
+}
+
+.island__bars,
+.island__bars::before,
+.island__x::before,
+.island__x::after {
+  display: block;
+  width: 16px;
+  height: 1.5px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+.island__bars {
+  position: relative;
+  width: 16px;
+  height: 7px;
+  background: none;
+  border-top: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+}
+
+.island__bars::before {
+  content: none;
+}
+
+.island__x {
+  position: relative;
+  width: 16px;
+  height: 16px;
+}
+
+.island__x::before,
+.island__x::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+}
+
+.island__x::before {
+  transform: rotate(45deg);
+}
+
+.island__x::after {
+  transform: rotate(-45deg);
+}
+
+/* ---- Expanded ---- */
+.island__big {
+  width: min(520px, calc(100vw - 24px));
+  padding: 10px 10px 16px;
+}
+
+.island__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 12px;
+}
+
+.island__who {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.island__links {
+  display: grid;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.island__links li {
+  transition:
+    opacity 0.5s var(--ease-out),
+    transform 0.6s var(--ease-out);
+  transition-delay: calc(0.08s + var(--i) * 0.04s);
+}
+
+.island:not(.island--open) .island__links li {
+  opacity: 0;
+  transform: translateY(14px);
+  transition-delay: 0s;
+}
+
+.island__links a {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 8px 14px;
+  border-radius: 16px;
+  font-size: clamp(26px, 6vw, 38px);
+  font-weight: 400;
+  overflow-wrap: anywhere;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  text-decoration: none;
+  transition:
+    background-color 0.25s,
+    padding-left 0.4s var(--ease-out),
+    color 0.25s;
+}
+
+.island__links a:hover {
+  padding-left: 22px;
+  background: rgba(180, 210, 231, 0.05);
+  color: var(--powder);
+}
+
+.island__num {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0;
+  color: var(--dim);
+}
+
+.island__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px 14px 0;
+  border-top: 1px solid var(--line);
+}
+
+.island__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: rgba(180, 210, 231, 0.08);
+  font-size: 14px;
+  text-decoration: none;
+  transition: background-color 0.25s;
+}
+
+.island__chip:hover {
+  background: rgba(180, 210, 231, 0.16);
+}
+
+.island__chip svg {
+  width: 15px;
+  height: 15px;
+}
+
+.island__brand svg:not(.island__ring) {
+  width: 16px;
+  height: 16px;
+}
