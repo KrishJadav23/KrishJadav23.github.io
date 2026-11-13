@@ -1,0 +1,30 @@
+.morph {
+  display: inline-block;
+  position: relative;
+}
+
+.morph__stage {
+  display: inline-grid;
+  justify-items: start;
+  white-space: nowrap;
+  filter: url(#morph-threshold) blur(0.35px);
+}
+
+.morph__stage > * {
+  grid-area: 1 / 1;
+}
+
+.morph__sizer {
+  visibility: hidden;
+}
+
+.morph__word {
+  color: inherit;
+  will-change: filter, opacity;
+}
+
+.morph__defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+}

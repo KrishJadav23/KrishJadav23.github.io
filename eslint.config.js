@@ -17,5 +17,9 @@ export default defineConfig([
       globals: globals.browser,
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
+    rules: {
+      // Components are used as JSX (<App />), which core ESLint doesn't count as a use.
+      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+    },
   },
 ])
