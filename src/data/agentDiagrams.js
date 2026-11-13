@@ -14,7 +14,7 @@ export const OVERVIEW = {
   h: 600,
   minW: 900,
   groups: [
-    { x: 196, y: 14, w: 1030, h: 572, label: 'AWS Cloud', sub: 'us-east-1 · separate dev and prod stacks', kind: 'cloud' },
+    { x: 196, y: 14, w: 1030, h: 572, label: 'AWS Cloud', sub: 'Separate dev and prod stacks', kind: 'cloud' },
     { x: 210, y: 52, w: 1002, h: 150, label: 'Data in', kind: 'lane' },
     { x: 210, y: 222, w: 1002, h: 350, label: 'Questions', kind: 'lane' },
   ],

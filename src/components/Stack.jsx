@@ -3,7 +3,7 @@ import ToolRing from './ToolRing'
 
 export default function Stack() {
   return (
-    <section id="stack" className="section stack" aria-labelledby="stack-title" data-shape="brain" data-pos="0 -0.7 0.72 0.4" data-pos-m="0 -0.6 0.5 0.3">
+    <section id="stack" className="section stack" aria-labelledby="stack-title" data-shape="dust" data-pos="0 0 1 0.22" data-pos-m="0 0 1 0.2">
       <div className="wrap">
         <div className="section-head" data-inview>
           <span className="label">Stack</span>

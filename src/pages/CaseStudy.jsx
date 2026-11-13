@@ -7,7 +7,7 @@ import { routeLink } from '../router'
 import './Case.css'
 
 const SPEC = [
-  ['Platform', 'AWS, us-east-1'],
+  ['Platform', 'AWS'],
   ['Compute', 'Lambda and ECS Fargate'],
   ['Data', 'Parquet on S3, read by DuckDB'],
   ['AI', 'Claude on Bedrock, LangGraph'],
@@ -189,8 +189,17 @@ export default function CaseStudy() {
 
   return (
     <article className="case">
-      {/* ---- Hero: the brain sits beside the title ---- */}
-      <header className="case-hero wrap" data-inview data-drag data-shape="brain" data-pos="3.1 0.4 1.05 0.85" data-pos-m="0 2.5 0.4 0" data-amb="0.7">
+      {/* ---- Hero: the same cycle as the home page, starting with the human ---- */}
+      <header
+        className="case-hero wrap"
+        data-inview
+        data-drag
+        data-shape="cycle"
+        data-cycle="self cube eye brain"
+        data-pos="3.1 0.75 0.95 0.85"
+        data-pos-m="0 2.5 0.4 0"
+        data-amb="0.7"
+      >
         <a className="link case-back" href="#work" onClick={routeLink}>
           <ArrowLeft />
           All work

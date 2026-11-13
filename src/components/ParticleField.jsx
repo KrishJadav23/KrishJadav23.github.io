@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { AMB_FRAG, AMB_VERT, FRAG, VERT } from '../gl/shaders'
+import { AMB_FRAG, AMB_VERT, FRAG, SPACE_FRAG, SPACE_VERT, VERT } from '../gl/shaders'
 import { createCube } from '../gl/cube'
 import { FINE, SHAPE, SHAPE_COUNT, brain, buildExtra, cubeModel, dust, eye, mulberry, self as head } from '../gl/shapes'
 import './ParticleField.css'
@@ -131,9 +131,11 @@ export default function ParticleField() {
 
     let prog
     let amb
+    let space
     try {
       prog = program(gl, VERT, FRAG)
       amb = program(gl, AMB_VERT, AMB_FRAG)
+      space = program(gl, SPACE_VERT, SPACE_FRAG)
     } catch (err) {
       console.warn('Particle field disabled:', err)
       document.documentElement.classList.add('no-webgl')
@@ -143,6 +145,12 @@ export default function ParticleField() {
     const uniforms = (p, names) => Object.fromEntries(names.map((n) => [n, gl.getUniformLocation(p, n)]))
     const u = uniforms(prog, ['uFrom', 'uTo', 'uMix', 'uTime', 'uMotion', 'uProj', 'uView', 'uModel', 'uAspect', 'uSize', 'uPR', 'uScrollVel', 'uPowder', 'uInk', 'uPoppy', 'uDim', 'uFine'])
     const ua = uniforms(amb, ['uTime', 'uAmb', 'uPR', 'uAspect', 'uPowder', 'uPoppy'])
+    const us = uniforms(space, ['uProj', 'uTravel', 'uTime', 'uPR', 'uAlpha', 'uMotion', 'uPowder', 'uInk', 'uPoppy'])
+    gl.useProgram(space)
+    gl.uniform3fv(us.uPowder, POWDER)
+    gl.uniform3fv(us.uInk, INK)
+    gl.uniform3fv(us.uPoppy, POPPY)
+    gl.uniform1f(us.uMotion, reduced ? 0 : 1)
     gl.useProgram(prog)
     gl.uniform3fv(u.uPowder, POWDER)
     gl.uniform3fv(u.uInk, INK)
@@ -174,9 +182,25 @@ export default function ParticleField() {
       return buf
     }
 
-    // Shapes and the ambient layer
+    // Shapes, the ambient layer and deep space
     const vao = gl.createVertexArray()
     const ambVao = gl.createVertexArray()
+    const spaceVao = gl.createVertexArray()
+    const STARS = narrow() ? 1000 : 2200
+    {
+      const r = mulberry(31)
+      const stars = new Float32Array(STARS * 4)
+      for (let i = 0; i < STARS; i += 1) {
+        // Spread wide, thinning toward the centre line so the tunnel reads
+        const ang = r() * Math.PI * 2
+        const rad = 1.5 + Math.sqrt(r()) * 13
+        stars[i * 4] = Math.cos(ang) * rad * 1.3
+        stars[i * 4 + 1] = Math.sin(ang) * rad * 0.75
+        stars[i * 4 + 2] = r() * 44
+        stars[i * 4 + 3] = r()
+      }
+      attach(space, spaceVao, 'aStar', stars, 4)
+    }
     const ambient = buildAmbient(narrow())
     attach(amb, ambVao, 'aPos', ambient.pos, 2)
     attach(amb, ambVao, 'aData', ambient.data, 4)
@@ -249,6 +273,7 @@ export default function ParticleField() {
     // The hero's cycle runs on its own clock, which simply stops while a shape is held.
     let cycleClock = 0
     let cycling = false
+    let cycleEl = null // a different cycling section (another page's hero) starts again from the first shape
     let raf = 0
     let last = performance.now()
     const t0 = last
@@ -257,6 +282,8 @@ export default function ParticleField() {
     const mouse = { x: 0, y: 0, nx: 0, ny: 0, px: 0, py: 0, moved: false }
     let lastScroll = window.scrollY
     let scrollVel = 0
+    // How far we've flown: each screen scrolled moves us 6 units forward, plus a slow drift.
+    let travel = 0
 
     // Click and drag a shape to orbit it; it drifts on, then eases back to its pose.
     const orbit = { on: false, x: 0, y: 0, rx: 0, ry: 0, vx: 0, vy: 0 }
@@ -283,6 +310,9 @@ export default function ParticleField() {
       gl.useProgram(amb)
       gl.uniform1f(ua.uPR, pr)
       gl.uniform1f(ua.uAspect, W / H)
+      gl.useProgram(space)
+      gl.uniformMatrix4fv(us.uProj, false, perspective((45 * Math.PI) / 180, W / H, 0.1, 100))
+      gl.uniform1f(us.uPR, pr)
     }
 
     // Which section is under the middle of the screen?
@@ -301,7 +331,11 @@ export default function ParticleField() {
       if (!pick) return
       cycling = pick.dataset.shape === 'cycle'
       if (cycling) {
-        const list = (pick.dataset.cycle || 'brain self eye cube').split(' ')
+        if (pick !== cycleEl) {
+          cycleEl = pick
+          cycleClock = 0
+        }
+        const list = (pick.dataset.cycle || 'self cube eye brain').split(' ')
         const lens = list.map((n) => HOLD_MS[n] || CYCLE_MS)
         let at = cycleClock % lens.reduce((a, b) => a + b, 0)
         let idx = 0
@@ -449,7 +483,17 @@ export default function ParticleField() {
       gl.clearColor(0, 0, 0, 0)
       gl.clear(gl.COLOR_BUFFER_BIT)
 
-      // Ambient layer first, behind the shape
+      // Deep space, furthest back
+      const goalTravel = (window.scrollY / Math.max(1, H)) * 6 + (reduced ? 0 : time * 0.35)
+      travel += (goalTravel - travel) * (1 - Math.exp(-dt * 4))
+      gl.useProgram(space)
+      gl.uniform1f(us.uTravel, travel)
+      gl.uniform1f(us.uTime, time)
+      gl.uniform1f(us.uAlpha, 0.9)
+      gl.bindVertexArray(spaceVao)
+      gl.drawArrays(gl.POINTS, 0, STARS)
+
+      // Ambient layer next, behind the shape
       gl.useProgram(amb)
       gl.uniform1f(ua.uTime, reduced ? 6 : time)
       gl.uniform1f(ua.uAmb, cur.amb)
@@ -527,6 +571,8 @@ export default function ParticleField() {
       buffers.forEach((b) => gl.deleteBuffer(b))
       gl.deleteVertexArray(vao)
       gl.deleteVertexArray(ambVao)
+      gl.deleteVertexArray(spaceVao)
+      gl.deleteProgram(space)
       gl.deleteProgram(prog)
       gl.deleteProgram(amb)
     }

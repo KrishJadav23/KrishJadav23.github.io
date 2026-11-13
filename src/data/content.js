@@ -21,7 +21,6 @@ export const AGENT_ID = 'analytics-agent'
 
 // Small facts along the bottom of the hero. Edit freely.
 export const HERO_META = [
-  { label: 'Currently building', value: 'A self-serve analytics agent' },
   { label: 'Day-to-day stack', value: 'Python, AWS, LangGraph, Terraform, GitHub CI/CD' },
 ]
 

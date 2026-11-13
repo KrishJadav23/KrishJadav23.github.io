@@ -277,3 +277,53 @@ void main(){
   outColor = vec4(col * a, a);
 }
 `
+
+/*
+  Deep space: particles spread through 44 units of depth. Scrolling flies the camera
+  forward through them (they stream past and wrap round to the far end), so moving
+  down the page feels like travelling through space.
+*/
+export const SPACE_VERT = /* glsl */ `#version 300 es
+precision highp float;
+in vec4 aStar; // x, y, z, seed
+uniform mat4 uProj;
+uniform float uTravel;
+uniform float uTime;
+uniform float uPR;
+uniform float uAlpha;
+uniform float uMotion;
+out float vA;
+out float vSeed;
+const float DEPTH = 44.0;
+void main(){
+  float z = mod(aStar.z + uTravel, DEPTH) - 36.0; // far at -36, passing the camera at +8
+  vec3 p = vec3(aStar.x, aStar.y, z);
+  p.x += sin(uTime * 0.07 * uMotion + aStar.w * 40.0) * 0.25;
+  p.y += cos(uTime * 0.05 * uMotion + aStar.w * 23.0) * 0.18;
+  vec4 view = vec4(p.x, p.y, p.z - 9.0, 1.0);
+  gl_Position = uProj * view;
+  float depth = -view.z;
+  float near = smoothstep(1.0, 4.5, depth); // fade just before it passes us
+  float far = smoothstep(46.0, 22.0, depth); // and emerge out of the dark
+  vA = near * far * (0.25 + 0.75 * fract(aStar.w * 13.7)) * uAlpha;
+  gl_PointSize = uPR * (1.0 + 2.2 * fract(aStar.w * 7.3)) * clamp(11.0 / depth, 0.25, 5.0);
+  vSeed = aStar.w;
+}
+`
+
+export const SPACE_FRAG = /* glsl */ `#version 300 es
+precision highp float;
+in float vA;
+in float vSeed;
+uniform vec3 uPowder;
+uniform vec3 uInk;
+uniform vec3 uPoppy;
+out vec4 outColor;
+void main(){
+  float r = length(gl_PointCoord - 0.5);
+  if (r > 0.5) discard;
+  float a = smoothstep(0.5, 0.1, r) * vA;
+  vec3 col = vSeed < 0.06 ? uPoppy : (vSeed < 0.3 ? uInk : uPowder);
+  outColor = vec4(col * a, a);
+}
+`

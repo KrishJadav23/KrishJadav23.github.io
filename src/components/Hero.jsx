@@ -12,7 +12,7 @@ export default function Hero({ ready }) {
       className="hero"
       aria-labelledby="hero-title"
       data-shape="cycle"
-      data-cycle="brain self eye cube"
+      data-cycle="self cube eye brain"
       data-drag
       data-amb="1"
       data-pos="2.75 0 1.32 1"
@@ -40,9 +40,9 @@ export default function Hero({ ready }) {
 
         <p className="hero__sub" style={{ '--d': 4 }}>
           I work as an AI product engineer, architecting and building a self-serve analytics agent on AWS that
-          answers Natural Lanauge questions about our company’s data (With the goal to replace tradition Analytic Platforms). In my spare I enjoy 
-          building cool things and desinging unique UI designs... As you can tell by this website :D
-          
+          answers natural language questions about our company’s data (with the goal of replacing traditional
+          analytics platforms). In my spare time I enjoy building cool things and designing unique UIs... as you
+          can tell by this website :D
         </p>
 
         <div className="hero__actions" style={{ '--d': 5 }}>

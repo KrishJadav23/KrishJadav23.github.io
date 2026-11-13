@@ -22,17 +22,21 @@ export default function ToolRing() {
   const api = useRef({ go: () => {} })
   const [front, setFront] = useState(0)
 
+  // True only when the last press turned into a drag, so the click after it is ignored.
+  const dragged = useRef(false)
+
   useEffect(() => {
     const stage = stageRef.current
     const ring = ringRef.current
     const reduced = prefersReduced()
+    const AUTO = -11 // degrees per second when idle: a new card comes round every ~2.3 s
     let theta = 0
-    let vel = 0
+    let vel = 0 // degrees per second
     let target = null
     let drag = null
-    let hover = false
     let inView = false
     let raf = 0
+    let last = 0
     let lastFront = -1
     let lastY = window.scrollY
     let radius = 0
@@ -53,8 +57,12 @@ export default function ToolRing() {
       cardRefs.current.forEach((card, i) => {
         if (!card) return
         const a = wrap(i * STEP + theta)
-        const facing = Math.max(0, Math.cos((a * Math.PI) / 180))
-        card.style.setProperty('--facing', facing.toFixed(3))
+        // Only touch the style when the value really changes, to keep each frame cheap.
+        const facing = Math.max(0, Math.cos((a * Math.PI) / 180)).toFixed(2)
+        if (card.dataset.facing !== facing) {
+          card.dataset.facing = facing
+          card.style.setProperty('--facing', facing)
+        }
         if (Math.abs(a) < bestA) {
           bestA = Math.abs(a)
           best = i
@@ -66,50 +74,43 @@ export default function ToolRing() {
       }
     }
 
-    const frame = () => {
+    const snap = () => {
+      vel = 0
+      target = Math.round(theta / STEP) * STEP
+    }
+
+    // Everything runs on real time, so it moves the same at 60 or 144 frames a second.
+    const frame = (now) => {
       raf = 0
+      const dt = last ? Math.min(0.05, (now - last) / 1000) : 1 / 60
+      last = now
       if (!drag) {
         if (target !== null) {
-          theta += (target - theta) * 0.11
-          if (Math.abs(target - theta) < 0.05) {
+          theta += (target - theta) * (1 - Math.exp(-dt * 9))
+          if (Math.abs(target - theta) < 0.03) {
             theta = target
             target = null
           }
-        } else if (Math.abs(vel) > 0.01) {
-          theta += vel
-          vel *= 0.94
-          // Settle on the nearest card once it slows down.
-          if (Math.abs(vel) < 0.15) {
-            vel = 0
-            target = Math.round(theta / STEP) * STEP
-          }
-        } else if (!hover && !reduced) {
-          theta -= 0.045
+        } else if (Math.abs(vel) > 2) {
+          theta += vel * dt
+          vel *= Math.exp(-dt * 3.2)
+          if (Math.abs(vel) <= 2) snap() // settle on the nearest card
+        } else if (!reduced) {
+          theta += AUTO * dt // the same speed wherever the cursor is
         }
       }
       render()
       if (inView) raf = requestAnimationFrame(frame)
+      else last = 0
     }
 
     const kick = () => {
       if (!raf) raf = requestAnimationFrame(frame)
     }
 
-    // Arrows and keys: step to the next / previous card.
-    api.current.go = (dir) => {
-      const base = target ?? Math.round(theta / STEP) * STEP
+    const jump = (to) => {
       vel = 0
-      target = base - dir * STEP
-      if (reduced) {
-        theta = target
-        target = null
-        render()
-      } else kick()
-    }
-    api.current.to = (i) => {
-      const a = wrap(i * STEP + theta)
-      vel = 0
-      target = theta - a
+      target = to
       if (reduced) {
         theta = target
         target = null
@@ -117,52 +118,65 @@ export default function ToolRing() {
       } else kick()
     }
 
+    // Arrows and keys: step to the next / previous card. Clicking a card brings it round.
+    api.current.go = (dir) => jump((target ?? Math.round(theta / STEP) * STEP) - dir * STEP)
+    api.current.to = (i) => jump(theta - wrap(i * STEP + theta))
+
+    const sens = () => 180 / Math.max(500, stage.offsetWidth)
+
     const onDown = (e) => {
       if (e.button !== 0) return
-      drag = { x: e.clientX, theta, t: performance.now(), lastX: e.clientX, moved: 0 }
+      dragged.current = false
+      drag = { x: e.clientX, theta, samples: [{ x: e.clientX, t: performance.now() }] }
       target = null
       vel = 0
+      // No pointer capture: window listeners follow the drag anywhere, and a plain click
+      // still reaches the card under the pointer.
       stage.classList.add('is-dragging')
+      kick()
     }
     const onMove = (e) => {
       if (!drag) return
       const dx = e.clientX - drag.x
-      drag.moved = Math.max(drag.moved, Math.abs(dx))
-      if (drag.moved > 4 && !stage.hasPointerCapture(e.pointerId)) stage.setPointerCapture(e.pointerId)
+      if (Math.abs(dx) > 5) dragged.current = true
+      theta = drag.theta + dx * sens()
       const now = performance.now()
-      const sens = 180 / Math.max(500, stage.offsetWidth)
-      theta = drag.theta + dx * sens
-      const dt = Math.max(1, now - drag.t)
-      vel = ((e.clientX - drag.lastX) * sens * 16) / dt
-      drag.lastX = e.clientX
-      drag.t = now
+      drag.samples.push({ x: e.clientX, t: now })
+      while (drag.samples.length > 2 && now - drag.samples[0].t > 100) drag.samples.shift()
       if (reduced) render()
       else kick()
     }
     const onUp = () => {
       if (!drag) return
-      const wasDrag = drag.moved > 4
+      // Fling speed from the last 100 ms of movement; a pause before letting go means no fling.
+      const now = performance.now()
+      const recent = drag.samples.filter((p) => now - p.t < 100)
+      vel = 0
+      if (recent.length >= 2) {
+        const a = recent[0]
+        const b = recent[recent.length - 1]
+        if (b.t > a.t) vel = (((b.x - a.x) / (b.t - a.t)) * 1000 * sens())
+      }
+      vel = Math.max(-720, Math.min(720, vel))
       drag = null
       stage.classList.remove('is-dragging')
-      if (wasDrag) {
-        // Swallow the click that follows a drag.
-        stage.addEventListener('click', (ev) => ev.stopPropagation(), { capture: true, once: true })
+      if (reduced || Math.abs(vel) < 20) {
+        if (reduced) {
+          theta = Math.round(theta / STEP) * STEP
+          render()
+        } else snap()
       }
-      if (reduced) {
-        theta = Math.round(theta / STEP) * STEP
-        render()
-      } else {
-        vel = Math.max(-6, Math.min(6, vel))
-        kick()
-      }
+      kick()
     }
 
+    // Scrolling past gives the ring a gentle push, which then settles like any other spin.
     const onScroll = () => {
       const y = window.scrollY
       const dy = y - lastY
       lastY = y
       if (!inView || reduced || drag) return
-      theta -= dy * 0.06
+      target = null
+      vel = Math.max(-320, Math.min(320, vel - dy * 0.8))
       kick()
     }
 
@@ -178,21 +192,13 @@ export default function ToolRing() {
     })
     ro.observe(stage)
 
-    const enter = () => {
-      hover = true
-    }
-    const leave = () => {
-      hover = false
-    }
-
     measure()
     render()
     stage.addEventListener('pointerdown', onDown)
     window.addEventListener('pointermove', onMove)
     window.addEventListener('pointerup', onUp)
     window.addEventListener('pointercancel', onUp)
-    stage.addEventListener('pointerenter', enter)
-    stage.addEventListener('pointerleave', leave)
+    window.addEventListener('blur', onUp)
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => {
       cancelAnimationFrame(raf)
@@ -202,8 +208,7 @@ export default function ToolRing() {
       window.removeEventListener('pointermove', onMove)
       window.removeEventListener('pointerup', onUp)
       window.removeEventListener('pointercancel', onUp)
-      stage.removeEventListener('pointerenter', enter)
-      stage.removeEventListener('pointerleave', leave)
+      window.removeEventListener('blur', onUp)
       window.removeEventListener('scroll', onScroll)
     }
   }, [])
@@ -240,7 +245,9 @@ export default function ToolRing() {
                 cardRefs.current[i] = el
               }}
               style={{ '--i': i, '--angle': `${i * STEP}deg`, '--brand': t.colour || '#b4d2e7' }}
-              onClick={() => api.current.to(i)}
+              onClick={() => {
+                if (!dragged.current) api.current.to(i)
+              }}
             >
               <div className="tool__face tool__face--front">
                 <span className="tool__index">{String(i + 1).padStart(2, '0')}</span>
